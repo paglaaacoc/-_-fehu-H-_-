@@ -98,6 +98,18 @@ jobs:
           [IO.File]::WriteAllText($source, $fixed, [Text.UTF8Encoding]::new($false))
           Write-Host 'Patched one Scratchpad-only CS0165 error. Frozen input ZIP and all cockpit HTML remain unchanged.'
 
+      - name: Adapt staged installer for preinstalled Inno Setup 6.7 (retain 64-bit install mode)
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $iss = (Resolve-Path 'stage\\installer\\Pathfinder-Installer-Common.iss').Path
+          $raw = [IO.File]::ReadAllText($iss)
+          $old = 'SetupArchitecture=x64'
+          $new = 'ArchitecturesInstallIn64BitMode={#ArchitecturesAllowedValue}'
+          if (-not $raw.Contains($old)) { throw 'Unexpected installer source version; no change applied.' }
+          if ($raw.Contains('ArchitecturesInstallIn64BitMode=')) { throw 'Installer already sets 64-bit mode; refusing ambiguous patch.' }
+          [IO.File]::WriteAllText($iss, $raw.Replace($old, $new), [Text.UTF8Encoding]::new($false))
+          Write-Host 'Inno 6-compatible architecture directive applied to CI staging only. Both payloads remain native x64/ARM64.'
+
       - name: Build both Windows installers without release or deployment
         run: |
           $ErrorActionPreference = 'Stop'
