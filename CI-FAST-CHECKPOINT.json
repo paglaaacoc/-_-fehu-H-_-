@@ -1,9 +1,9 @@
 {
   "kind": "disposable_fast_winui_validation",
-  "private_source_sha": "74a800a1811ef945a620d16384f31ee21493b780",
+  "private_source_sha": "6b54c3987934caa860094adcbc92ccf504b9342b",
   "accepted_base_sha": "8a91a786f4df2d0c0b60d92cc781451e98fe6b0b",
-  "test_focus": "R5 structural Context-note guard, native compile, crash-draft recovery, research and safety probes",
+  "test_focus": "Final R5 native compile and standalone safety, research, draft recovery contracts including note-baseline behavior",
   "owner_acceptance": "PENDING",
   "research_data": "SYNTHETIC ONLY",
-  "preceding_fast_run": "37970980040 success"
+  "preceding_fast_run": "37972250539 success"
 }
