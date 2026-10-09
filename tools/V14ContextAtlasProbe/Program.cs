@@ -208,6 +208,12 @@ try
         chapters,
         temp);
 
+    VerifyAdversarialImportedPackages(
+        builtIn,
+        chapters,
+        sourceBuiltIn,
+        temp);
+
     VerifyImportIsolation(
         builtIn,
         chapters,
@@ -566,6 +572,87 @@ static void VerifyValidationFailures(
             lineage["parent_payload_sha256"] =
                 null;
         });
+}
+
+static void VerifyAdversarialImportedPackages(
+    ProposalCorpusPackage builtIn,
+    IReadOnlyList<ChapterSummary> chapters,
+    string sourceBuiltIn,
+    string temp)
+{
+    // Input ceilings are independent: compressed ZIP, manifest expansion and
+    // payload expansion must each be rejected before JSON processing.
+    byte[] tooLarge = new byte[
+        checked((int)ProposalCorpusValidator.MaxPackageBytes + 1)];
+    ProbeSupport.RequireThrows(
+        () => ProposalCorpusValidator.LoadAndValidateBytes(
+            tooLarge, "probe://oversized.zip", chapters, isBuiltIn: false),
+        "Oversized compressed Atlas ZIP must be refused.");
+
+    static byte[] CreateZip(string entryName, byte[] contents)
+    {
+        using var ms = new MemoryStream();
+        using (var z = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            var entry = z.CreateEntry(entryName, CompressionLevel.Optimal);
+            using var output = entry.Open();
+            output.Write(contents);
+        }
+        return ms.ToArray();
+    }
+
+    byte[] inflatedManifest = CreateZip(
+        "manifest.json",
+        new byte[checked((int)ProposalCorpusValidator.MaxManifestBytes + 1)]);
+    ProbeSupport.RequireThrows(
+        () => ProposalCorpusValidator.LoadAndValidateBytes(
+            inflatedManifest, "probe://manifest-bomb.zip",
+            chapters, isBuiltIn: false),
+        "Overexpanded Atlas manifest must be refused.");
+
+    using var payloadZip = new MemoryStream();
+    using (var zip = new ZipArchive(
+        payloadZip, ZipArchiveMode.Create, leaveOpen: true))
+    {
+        using (Stream m = zip.CreateEntry(
+            "manifest.json", CompressionLevel.Optimal).Open())
+            m.Write(builtIn.ManifestBytes);
+
+        using Stream p = zip.CreateEntry(
+            builtIn.Manifest.PayloadFile, CompressionLevel.Optimal).Open();
+        byte[] chunk = new byte[65536];
+        long total = 0;
+        while (total <= ProposalCorpusValidator.MaxPayloadBytes)
+        {
+            int n = (int)Math.Min(chunk.Length,
+                ProposalCorpusValidator.MaxPayloadBytes + 1 - total);
+            p.Write(chunk, 0, n);
+            total += n;
+        }
+    }
+    ProbeSupport.RequireThrows(
+        () => ProposalCorpusValidator.LoadAndValidateBytes(
+            payloadZip.ToArray(), "probe://payload-bomb.zip",
+            chapters, isBuiltIn: false),
+        "Overexpanded Atlas payload must be refused.");
+
+    string isolated = Path.Combine(temp, "invalid-import-isolation");
+    Directory.CreateDirectory(isolated);
+    File.WriteAllText(Path.Combine(isolated, "invalid.zip"),
+        "This is not a ZIP archive.");
+    byte[] collision = ProbeSupport.BuildVariant(
+        builtIn, payload => payload["formal_title"] = "collision probe");
+    File.WriteAllBytes(Path.Combine(isolated, "collision.zip"), collision);
+
+    var library = new ProposalCorpusRepository(
+        chapters, sourceBuiltIn, isolated);
+    IReadOnlyList<ProposalCorpusPackage> loaded = library.LoadAll();
+    ProbeSupport.Require(
+        loaded.Count == 1 && loaded[0].IsBuiltIn &&
+        library.RejectedImportedPackages.Count == 2,
+        "Invalid ZIP or identity collision must not block healthy built-in Atlas.");
+
+    Console.WriteLine("Build 1.9 Atlas ZIP bounds and import isolation: PASS");
 }
 
 static void VerifyImportIsolation(

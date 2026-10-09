@@ -949,11 +949,11 @@ internal sealed class OwnerDataBackupService
                 return false;
             }
 
-            // A committed reset records the exact newly installed research
-            // snapshot digest. Compare using the SQLite snapshot pathway,
-            // never a raw live WAL-file byte read. An unexpected digest must
-            // rebuild safely from the verified pre-operation authority.
-            if (string.IsNullOrWhiteSpace(journal.NewResearchSha256) ||
+            // New committed journals record a research digest. Older
+            // committed journals may not: retain their strong zero-table
+            // validation without treating a missing optional digest as proof
+            // of corruption. A present digest must match the WAL-safe snapshot.
+            if (!string.IsNullOrWhiteSpace(journal.NewResearchSha256) &&
                 !LiveStateMatches(journal.NewResearchSha256, expectedSettings))
             {
                 return false;
@@ -1060,8 +1060,24 @@ internal sealed class OwnerDataBackupService
                 _settingsFile,
                 overwrite: false);
 
-            if (!CommittedResetStateIsValid(
-                    journal))
+            // A reconstructed database is a fresh SQLite authority, not
+            // necessarily byte-identical to the displaced committed file.
+            // Independently calculate its snapshot digest, then validate all
+            // mutable tables and the original settings authority against it.
+            (string rebuiltSha, string rebuiltSettingsSha) =
+                ComputeLiveStateHashes();
+            OwnerStateOperationJournal rebuiltJournal =
+                journal with
+                {
+                    NewResearchSha256 = rebuiltSha,
+                    NewSettingsSha256 = rebuiltSettingsSha
+                };
+
+            if (!CommittedResetStateIsValid(rebuiltJournal) ||
+                !string.Equals(
+                    rebuiltSettingsSha,
+                    journal.NewSettingsSha256 ?? journal.PreSettingsSha256,
+                    StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidDataException(
                     "Committed reset recovery rebuilt fresh research state but verification did not pass.");
