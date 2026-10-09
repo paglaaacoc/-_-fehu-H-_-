@@ -3,14 +3,14 @@
   "build": "Build 1.9 R1 - UNACCEPTED / remediation CI",
   "source_repository": "paglaaacoc/Quran-Reconciliation-Workstation",
   "source_branch": "dev/build-1.9-research-integrity-closure",
-  "source_candidate_sha": "357976e2df91b272bfc5568846b3af06a0d20724",
+  "source_candidate_sha": "0cff93d60463ff28463bc48ede35b1eb2440d912",
   "accepted_base_sha": "8a91a786f4df2d0c0b60d92cc781451e98fe6b0b",
   "source_files_mirrored": 163,
   "mirror_policy": "Only src/scripts/tools and required CI metadata, no private git history or owner research. Source files SHA matched before Windows CI.",
-  "owner_acceptance": "PENDING - source candidate NOT owner accepted",
+  "owner_acceptance": "PENDING",
   "created_date": "2026-10-09",
   "mirror_checkout_policy": "Preserve source .gitattributes and exact LF for pinned Juz JSON.",
   "data_safety": "Do not upload real owner research or backup state.",
-  "last_verified_ci_tree": "ee689ce9b8b1d69a5d8769a3bb2de65ac2fca9b5",
-  "last_ci_result": "Previous runs 37968004917 and 37968892122 failed at test-project link and unsupported XAML event respectively; both repaired in this source."
+  "last_verified_ci_tree": "8ba28929ea8b29597c4bb888352d57c1f9c5a005",
+  "last_ci_result": "37969639195: native compilation and research probes passed; legacy committed-reset recovery failed after digest strengthening. Rebuilt snapshot verification corrected."
 }
