@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/AppPaths.cs"
+             Link="Shared/AppPaths.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/BuildIdentity.cs"
+             Link="Shared/BuildIdentity.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/AtlasSessionSelection.cs"
+             Link="Shared/AtlasSessionSelection.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/WorkingSliceNavigation.cs"
+             Link="Shared/WorkingSliceNavigation.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/AppSettings.cs"
+             Link="Shared/AppSettings.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/ContextAtlasResearchSnapshotRepository.cs"
+             Link="Shared/ContextAtlasResearchSnapshotRepository.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/ProposalCorpusImportService.cs"
+             Link="Shared/ProposalCorpusImportService.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/ProposalCorpusRepository.cs"
+             Link="Shared/ProposalCorpusRepository.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/ProposalCorpusValidator.cs"
+             Link="Shared/ProposalCorpusValidator.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/ContextAtlasVersePreviewReader.cs"
+             Link="Shared/ContextAtlasVersePreviewReader.cs" />
+    <Compile Include="../../src/QuranReconciliation/Models/ContextAtlasPreviewVerse.cs"
+             Link="Shared/ContextAtlasPreviewVerse.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/ProposalHandoffExportService.cs"
+             Link="Shared/ProposalHandoffExportService.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/CorpusRepository.cs"
+             Link="Shared/CorpusRepository.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/JuzRepository.cs"
+             Link="Shared/JuzRepository.cs" />
+    <Compile Include="../../src/QuranReconciliation/Models/ContextAtlasModels.cs"
+             Link="Shared/ContextAtlasModels.cs" />
+  </ItemGroup>
+</Project>
