@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Holy Quran TRP — Complete Offline User Guide · Build 1.8</title>
+<style>
+:root{color-scheme:light dark;font-family:"Segoe UI",system-ui,Arial,sans-serif;--bg:#f4f7fa;--paper:#fff;--ink:#152634;--muted:#526779;--line:#d9e2e9;--accent:#146794;--soft:#edf5fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1721;--paper:#142331;--ink:#f1f5f8;--muted:#a6b7c6;--line:#344c5c;--accent:#8ad3fb;--soft:#203746}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);line-height:1.65}
+header{background:var(--paper);border-bottom:1px solid var(--line);padding:22px max(24px,calc((100vw - 1500px)/2));}
+header h1{font-size:1.75rem;margin:0;line-height:1.25}header p{margin:6px 0 0;color:var(--muted)}
+.shell{display:grid;grid-template-columns:275px minmax(0,900px);gap:38px;max-width:1500px;margin:auto;padding:30px 24px 80px;align-items:start}
+nav{position:sticky;top:24px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px;max-height:calc(100vh - 45px);overflow:auto}
+nav a{display:block;color:var(--muted);text-decoration:none;padding:5px 0;font-size:.94rem}nav a:hover,nav a:focus{color:var(--accent);text-decoration:underline}
+nav strong{display:block;margin-bottom:8px}main{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:38px 48px}
+h2{font-size:1.46rem;border-top:1px solid var(--line);padding-top:30px;margin-top:40px}h2:first-of-type{border-top:0;margin-top:0;padding-top:0}
+h3{font-size:1.11rem;margin-top:25px}p,li{max-width:78ch}li{margin:4px 0}
+a{color:var(--accent)}code{font-size:.91em;background:var(--soft);padding:2px 5px;border-radius:4px}
+.callout{border-left:4px solid var(--accent);background:var(--soft);padding:13px 17px;margin:20px 0;border-radius:0 8px 8px 0}
+table{width:100%;border-collapse:collapse;font-size:.94rem;margin:18px 0}td,th{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.search{width:100%;padding:10px;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:6px;margin-bottom:12px}
+details{margin:10px 0;padding:10px;background:var(--soft);border-radius:6px}
+footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
+@media(max-width:900px){.shell{display:block;padding:12px}nav{position:static;max-height:none;margin:8px 0 18px}main{padding:25px 20px}}
+@media print{nav{display:none}header{padding:12px 0}.shell{display:block;padding:0}main{border:0;padding:0}h2{break-after:avoid}}
+</style>
+</head>
+<body>
+<header><h1>The Holy Quran TRP</h1><p>Complete offline user guide · Build 1.8 · Windows native · The Holy Translation Reconciliation Project</p></header>
+<div class="shell">
+<nav aria-label="Guide contents">
+<strong>Contents</strong>
+<input id="search" class="search" placeholder="Find a topic in this guide…" aria-label="Search guide" oninput="searchGuide(this.value)">
+<a href="#purpose">1. What this workstation is</a>
+<a href="#start">2. First-run and safe setup</a>
+<a href="#reading">3. Qur'an reading and navigation</a>
+<a href="#research">4. Research Context Map</a>
+<a href="#notes">5. Notes, statuses and provenance</a>
+<a href="#slices">6. Working Slices</a>
+<a href="#history">7. Organized research History</a>
+<a href="#atlas">8. Context Atlas overview</a>
+<a href="#compare">9. Comparing Context proposals</a>
+<a href="#pins">10. Pin &amp; Compare</a>
+<a href="#evidence">11. Ayah Evidence</a>
+<a href="#surround">12. Read in surrounding Context</a>
+<a href="#handoffs">13. New and Improve AI handoffs</a>
+<a href="#import">14. Importing proposals safely</a>
+<a href="#backups">15. Backup, restore and reset</a>
+<a href="#portable">16. Portable folders and migration</a>
+<a href="#appearance">17. Layout, themes and zoom</a>
+<a href="#workflows">18. Recommended research workflows</a>
+<a href="#troubleshooting">19. Troubleshooting and FAQs</a>
+<a href="#glossary">20. Key terminology</a>
+</nav>
+<main id="guide">
+<section id="purpose"><h2>1. What this workstation is</h2>
+<p>The Holy Quran TRP is a <strong>private, offline-first Windows research workstation</strong> for The Holy Translation Reconciliation Project. It brings canonical Qur'anic text, selected translations and supporting research tools together while preserving your own developing translation decisions and their history.</p>
+<p>It has two fundamentally different layers. The <strong>primary research workspace</strong> contains your editable work: Context segmentation, notes, translation/reconciliation Working Slices and History. The <strong>Context Atlas</strong> contains outside <em>proposals</em> and read-only inspection tools. An AI proposal is not an amendment to your research and cannot silently become one.</p>
+<div class="callout"><strong>Foundation:</strong> the 114 Surahs, 6,236 Ayat and canonical Arabic source data are not editable through research actions. Interpretation, Context boundaries and source comparisons are proposals and human research choices, not changes to the Qur'an itself.</div>
+</section>
+
+<section id="start"><h2>2. First run and safe setup</h2>
+<ol><li>Extract the complete Windows ZIP to a dedicated writable folder; do not run the executable from inside the compressed archive.</li>
+<li>Keep the provided <code>Corpus</code>, <code>Fonts</code> and associated application files together. Missing companion files cause incomplete or unavailable evidence.</li>
+<li>Launch <strong>The Holy Quran TRP.exe</strong>. Allow local workspace initialization to finish.</li>
+<li>Check the build label under the title. For this guide it should identify <strong>Build 1.8</strong>.</li>
+<li>Choose a comfortable theme and font zoom. Review the three Arabic-script display toggles before starting.</li>
+<li>Use <strong>Data safety → Create verified backup</strong> before significant experimental changes, and keep additional backup copies outside the application folder.</li></ol>
+<p>The Windows SmartScreen warning sometimes shown for an unsigned executable concerns publisher reputation; it does not prove the application is infected or certify it is safe. Verify the ZIP's source and hash before deciding whether to run it.</p>
+</section>
+
+<section id="reading"><h2>3. Qur'an reading and navigation</h2>
+<h3>Surah, Juz and Ayah</h3><p>Use the Surah list to navigate among the 114 Surahs. The Juz selector provides traditional reading-position awareness; a Juz boundary does <em>not</em> necessarily mark a discourse or research Context boundary. Navigate to a relevant Ayah and read the Arabic before deciding what its semantic unit is.</p>
+<h3>Arabic presentation</h3><p>The top toolbar offers Uthmani, IndoPak and IndoPak Nastaleeq display options. These are visual scripts drawn from the bundled source files; choosing a script does not alter the original Ayah data. Script visibility may be toggled without losing current research.</p>
+<h3>Translations and sources</h3><p>The research workspace permits selecting appropriate translation and tafsir/source resources. For structural boundary research, keep the controlling Arabic evidence clear and distinguish a translation's wording from the Arabic. Some legacy records include source footnotes: read these with the verse rather than treating them as separate Ayat.</p>
+</section>
+
+<section id="research"><h2>4. Research Context Map</h2>
+<p>The editable Context Map organizes a Surah into consecutive research passages. A Context Block represents Ayat that should normally be studied together to understand the same immediate discourse. Research boundaries are editable; they are distinct from fixed Surah and Juz divisions.</p>
+<ol><li>Choose a Surah and inspect its current Context Block list.</li><li>Select the passage you wish to work on; confirm its start and end Ayat in the source text.</li><li>When evidence supports it, use the existing Context Map controls to split or merge passages. Do not split merely to fit a preferred length.</li><li>Update status and notes to record why you made a decision, rather than relying on a label alone.</li><li>Review the resulting passage adjacency and any affected Working Slices. Take a verified backup before large structural edits.</li></ol>
+<p>Existing research constraints and protected write paths take precedence over any AI proposal. The app's History and provenance help distinguish current state from earlier decisions.</p>
+</section>
+
+<section id="notes"><h2>5. Notes, statuses and provenance</h2>
+<p>Ayah notes, Context notes and their revisions are persistent parts of your research. Select the correct Ayah or Context before editing. Use each note to record interpretive questions, source comparisons and the reasoning behind a boundary or translation choice. Apply status labels consistently; a status should represent <em>your</em> actual level of review, not an AI model's confidence.</p>
+<p>Where the interface marks unsaved or dirty state, complete or discard the edit deliberately before changing workflows. History contains organized prior work and timestamps. The Context Atlas sidebar deliberately provides <em>read-only snapshots</em> of overlapping research; it is not a second editor.</p>
+</section>
+
+<section id="slices"><h2>6. Working Slices</h2>
+<p><strong>Working Slices</strong> are durable reconciliation units. Multiple slices can coexist, be at different stages and be resumed independently. A slice has a defined Surah-local range, notes/work and revision history.</p>
+<ol><li>Start from an appropriate existing research Context using <strong>New from selected Context…</strong> where available.</li><li>Confirm the passage range; a Working Slice is not automatically the same as a Context Atlas proposal.</li><li>Inspect the Arabic source and selected translations side by side as you work.</li><li>Save intentional changes and use the slice's explicit status/revision tools to track development.</li><li>Revisit earlier slices through the Working Slices or History workspace, rather than creating unnecessary duplicates.</li></ol>
+<p>Deletions and historical removals have specific safety semantics; do not assume a removed slice has been physically wiped from all historical records. Rely on the app's available History and backup controls.</p>
+</section>
+
+<section id="history"><h2>7. Organized research History</h2>
+<p>The History workspace contains research activity, changes and version context, with search, filters and organized/timeline browsing. Use it when you need to recover the <em>reason</em> for a past decision or return to work you previously completed.</p>
+<p>A useful pattern is to review History before changing an established Context boundary. The current record alone may not explain why a boundary was originally chosen. Backups protect complete research data; History and immutable revisions answer different questions and should not be mistaken for backup files.</p>
+</section>
+
+<section id="atlas"><h2>8. Context Atlas overview</h2>
+<p>Context Atlas is the <strong>read-only Proposal Corpus workspace</strong>. The selected corpus can be the bundled proposal or a separately imported independent or revised proposal. Atlas actions provide browsing, review, cross-Surah worksets, comparison, provenance and new/revision research handoffs.</p>
+<table><tr><th>Atlas area</th><th>What it does</th></tr>
+<tr><td>Browse</td><td>Read the selected proposal's fine Context Blocks, rationale and Macro Groups by Surah.</td></tr>
+<tr><td>Related Worksets</td><td>Inspect explicitly proposed thematic relationships across Surahs; these do not merge canonical Ayah ranges.</td></tr>
+<tr><td>Review</td><td>Find important or uncertain proposal records, with lazy native cards to avoid building the entire list at once.</td></tr>
+<tr><td>Compare</td><td>Inspect two chosen corpora at the <em>same Ayah boundary</em> and see actual Context Blocks and reasoning on both sides.</td></tr>
+<tr><td>Pins</td><td>Keep up to 40 Ayat/Context passages temporarily in a session comparison tray.</td></tr>
+<tr><td>Provenance</td><td>Read corpus identity, edition, model/contributor and source metadata.</td></tr></table>
+<p><strong>Read Ayat</strong> is available from many Atlas results. It opens local Qur'an evidence without creating a Working Slice, changing segmentation or writing notes.</p>
+</section>
+
+<section id="compare"><h2>9. Comparing Context proposals — Build 1.8</h2>
+<ol><li>Import a second validated Proposal Corpus or choose any two already available corpora.</li><li>Open <strong>Context Atlas → Compare</strong> and choose <strong>Corpus A</strong> and <strong>Corpus B</strong>.</li><li>Use the Surah list to focus the comparison. The overview reports shared, A-only and B-only boundaries and exact matching fine ranges.</li><li>Use <strong>Previous difference</strong> and <strong>Next difference</strong> to inspect one disputed Ayah transition at a time.</li><li>Read the actual Contexts containing the Ayah before and after the transition, their coherence notes, boundary reasons and Macro Group labels side by side.</li><li>Choose <strong>Read Ayat side by side</strong> (or <strong>Read A/B Ayat</strong> from either column) to open two independently scrollable canonical Arabic readers. Each follows its own corpus's actual Context boundaries, while marking the disputed Ayah transition in both.</li><li>Optionally select one English or Bengali translation for both panes; the sources, zoom and Arabic-script controls apply consistently. Choose <strong>Back to Compare</strong> without altering research state.</li><li>Use <strong>Ayah Evidence</strong> or <strong>Pin Context</strong> for closer analysis.</li></ol>
+<p><strong>Session restoration:</strong> when you switch from Context Atlas to Research, Working Slices, History, or another app workspace and return during the same launch, Atlas keeps the selected tab, Corpus A/B choices, Surah, disagreement and reading/scroll position. Pins remain session-only. Explicitly importing or removing a corpus refreshes the list; a removed corpus cannot be restored and receives a safe fallback.</p>
+<p>An <strong>A-only boundary</strong> means Corpus A separates Ayat at that position while B keeps them within one fine Context. A <strong>B-only boundary</strong> means the reverse. Neither is automatically right. The comparison is aligned by Ayah reference, <em>not</em> by Context Block ordinal number: Context 3 in one corpus need not correspond to Context 3 in another.</p>
+<div class="callout">Compare is for <strong>evaluation</strong>, never automatic reconciliation. It does not promote either AI proposal into editable owner research.</div>
+</section>
+
+<section id="pins"><h2>10. Pin &amp; Compare — Build 1.8</h2>
+<p>Use <strong>Pin</strong> from an Atlas Context card, <strong>Pin Context</strong> from Compare, or <strong>Pin this Ayah</strong> from an open Read Ayat preview. Pins form a temporary list that can contain passages from several Surahs.</p>
+<p>Open the <strong>Pins</strong> tab. Select any stored passage as <strong>A</strong> and another as <strong>B</strong>. The pinned comparison shows bounded local Uthmani Arabic evidence for up to the first three Ayat of each passage. Use <strong>Read full passage</strong> for a long Context. You can remove a pin or clear the session tray. There is a safety cap of 40 entries.</p>
+<p><strong>Nothing in Pins is saved to research.sqlite</strong>. Pins are intentionally discarded after you close the application. Do not use this tray as a substitute for durable notes, Working Slices or bookmarks.</p>
+</section>
+
+<section id="evidence"><h2>11. Ayah Evidence — Build 1.8</h2>
+<p>From Read Ayat or a Compare disagreement, select <strong>Ayah Evidence</strong> for an individual Ayah. This opens a read-only window containing existing local word-by-word positions, Arabic words, transliterations and English word meanings, plus research Context overlap, note counts and Working Slice references where available.</p>
+<p>The evidence view uses the existing local word-by-word database and a SELECT-only summary of your research database. It neither edits notes nor assumes a proposed Context is correct. Word meanings and transliterations are reference aids, not substitutes for interpreting the Arabic sentence and larger discourse.</p>
+</section>
+
+<section id="surround"><h2>12. Read in surrounding Context — Build 1.8</h2>
+<p>While Read Ayat is open, select <strong>Show up to 3 Ayat before and after (outside selected Context)</strong> to view neighboring evidence at the passage boundary. The feature automatically stops at a Surah edge. Surrounding Ayat use a different background and display an explicit <strong>Outside selected Context</strong> label.</p>
+<p>These neighboring Ayat remain outside the selected proposal block. Their presence does not redefine the Context boundary or affect saved research. Uncheck the option to return to the selected passage alone. The preview remains lazy and its translation-source selectors can still be used.</p>
+</section>
+
+<section id="handoffs"><h2>13. New and Improve AI research handoffs</h2>
+<h3>New Proposal Handoff</h3><p>From the Atlas Export Handoff menu, choose <strong>New Proposal Handoff</strong> to create a self-contained evidence pack for an entirely independent research process. It includes Arabic evidence, the optional narrow English helper, terminology, exact app-native schemas, a detailed model prompt, and a validation script. It deliberately <strong>does not include an existing Proposal Corpus</strong>.</p>
+<h3>Improve Existing Proposal Corpus</h3><p>Select the specific parent corpus, then choose <strong>Improve Existing Proposal Corpus…</strong>. The exported pack includes that parent and its exact lineage hash, a dedicated revision prompt, a changelog template and common evidence. The revised proposal must use a new ID and edition; it must not overwrite the parent. Independence and revision are fundamentally different research assignments.</p>
+<h3>Instructions for the AI research chat</h3><p>The ZIP includes its own <code>01-MASTER-PROMPT.md</code> and <code>02-IMPORT-PACKAGE-CONTRACT.md</code>. Ask the research model to read both and actually complete its file-based analysis, rather than only drafting a plan. Require it to save after each Surah, validate per-Surah outputs, run the final complete ZIP validator, and return separate <em>import</em> and <em>research-continuity</em> ZIP files.</p>
+</section>
+
+<section id="import"><h2>14. Importing Proposal Corpora safely</h2>
+<ol><li>Obtain a trusted ZIP that contains <code>manifest.json</code> and <code>proposal-corpus.json</code> at its root.</li><li>Run the supplied Python preflight if available, but remember that it cannot replace the application's final native importer.</li><li>Choose <strong>Context Atlas → Import Proposal Corpus…</strong>, select the ZIP and await validation.</li><li>Verify the imported display name, contributor, source information and expected Surah content in Browse and Provenance.</li><li>When appropriate, use Compare to evaluate the new corpus against another, without applying it to your research.</li></ol>
+<p>A package with an incorrect payload hash, conflicting corpus identity or malformed ranges should be refused. A repeated import of byte-identical content can be reported as already present. Removing an imported corpus deletes only its isolated imported proposal package, not your research notes, saved Contexts, Working Slices or built-in proposal.</p>
+</section>
+
+<section id="backups"><h2>15. Data safety, verified backup, restore and reset</h2>
+<p><strong>Ask before closing app:</strong> Open <strong>Data safety</strong> and check or uncheck the option. Enabled by default, this preference is stored in portable Settings and remembers your choice on later launches. When on, normal Windows close actions, including X and Alt+F4, ask for confirmation before exiting. Choose <em>Keep working</em> to retain current in-memory text and workspace state. The close prompt does not save unsaved notes for you and cannot intercept a crash, forced process kill or power failure. Backup/restore/reset still follow their existing protected processes.</p>
+<p>The bottom navigation contains <strong>Data safety</strong> with verified backup, restore and reset controls. Treat these as high-consequence operations, not routine appearance preferences.</p>
+<ol><li>Before meaningful research or substantial changes, use <strong>Create verified backup</strong> and ensure the backup completes successfully.</li><li>Store a copy outside the active workstation directory—ideally on another storage device or protected location.</li><li>Before restore, verify that you selected the intended backup. Restoration replaces active research state according to the application's existing guarded process.</li><li>Before reset, make and independently preserve a verified backup. Read every destructive-operation confirmation carefully.</li><li>Never overwrite the app's generated research files by manually copying individual SQLite files while the program is open.</li></ol>
+<div class="callout"><strong>Research safety priority:</strong> Backup protects durable owner research. The Atlas ZIP is a separate proposed scholarship package and must not be confused with a verified backup of your work.</div>
+</section>
+
+<section id="portable"><h2>16. Portable folders, relocation and migration</h2>
+<p>This is a portable Windows workstation. Keep the executable, bundled corpus, source fonts and generated folders together when moving between computers or locations. Prefer closing the app, making a verified research backup, and copying the complete application folder rather than only the EXE.</p>
+<p>The app may create <code>Data/</code>, <code>Backups/</code>, <code>Diagnostics/</code>, Context Atlas imported packages and exports next to its portable installation. These generated folders hold your local state and must not be accidentally included in any public development/CI mirror.</p>
+<p>A newly downloaded build ZIP is not automatically your existing work. Restore or migrate owner data deliberately using the accepted backup procedures. Never blindly replace a newer research database with an older copy.</p>
+</section>
+
+<section id="appearance"><h2>17. Themes, zoom and layout</h2>
+<p>Theme and Zoom remain in the top toolbar because they are frequent reading controls. The application offers light, night and OLED variants. Arabic script toggles also remain visible in the top bar.</p>
+<p>Use the <strong>Layout</strong> menu to show/hide sidebars, choose full/compact/hidden top bar and reset panel widths. Research and Atlas preview content should wrap when zoomed or when the window width changes. On a 34-inch ultrawide, the Atlas Compare view can show two large columns; at a narrower width it stacks the paired cards.</p>
+<p>If a long passage or translation seems clipped, try expanding the center reading area using the splitters or show fewer sidebars. If it persists, note the version, monitor resolution, scaling, Surah and Ayah range before reporting it.</p>
+</section>
+
+<section id="workflows"><h2>18. Practical research workflows</h2>
+<h3>A. Review a proposed Context disagreement</h3>
+<ol><li>Open Atlas Compare and select two corpora.</li><li>Choose a Surah and the next disputed boundary.</li><li>Read both Context coherence notes and the reason each corpus splits or joins that passage.</li><li>Read the actual Arabic around the transition; optionally enable surrounding evidence.</li><li>Inspect Ayah Evidence where lexical details matter.</li><li>Record your own conclusion in persistent Research, not in the temporary Atlas display.</li></ol>
+<h3>B. Track a cross-Surah structural idea</h3>
+<ol><li>Open Related Worksets and inspect the proposed members/subsets.</li><li>Pin two particularly relevant passages from different Surahs.</li><li>Use the Pins tray to read them side by side, then inspect the full Contexts.</li><li>Preserve your evaluation in your own notes or Working Slices as appropriate.</li></ol>
+<h3>C. Commission a fully independent AI Context analysis</h3>
+<ol><li>Export <strong>New Proposal Handoff</strong>, not Improve Existing.</li><li>Attach only that handoff to the independent research chat.</li><li>Require Arabic-first research and persisted 114-Surah checkpoints.</li><li>Validate and import the resulting proposal ZIP in the Atlas.</li><li>Treat the result as a new proposed scholarly view, never an authoritative replacement of existing research.</li></ol>
+<h3>D. Refine a previous proposal deliberately</h3><p>Export Improve Existing for the exact parent, require a new edition, a source-grounded changelog and exact lineage, verify import compatibility, and keep both old and new proposals available for inspection.</p>
+</section>
+
+<section id="troubleshooting"><h2>19. Troubleshooting and FAQs</h2>
+<details><summary>Why can I see an imported proposal but not edit its Context Blocks?</summary><p>Context Atlas is intentionally read-only. Edit <em>your own</em> Context Map in Research; imported proposal boundaries are not owner research state.</p></details>
+<details><summary>Why is a ZIP rejected even if JSON validation passes?</summary><p>The production importer enforces exact native fields, SHA-256 matching, Surah coverage, boundaries, Macro partition and related-workset references. Use the enclosed final-package validator before attempting import.</p></details>
+<details><summary>Why don't the A and B Context numbers line up?</summary><p>Two proposals can split the same Surah differently. Compare is Ayah-aligned: it shows passages containing the same transition, not blocks with coincidentally matching indices.</p></details>
+<details><summary>Where did my pins go after restarting?</summary><p>Pins are session-only by design, not durable research records. Record important decisions in Research or Working Slices.</p></details>
+<details><summary>Why is an Ayah visibly outside the selected Context?</summary><p>You enabled surrounding evidence. It is shown for interpretation of a boundary; it is not part of the selected proposed range.</p></details>
+<details><summary>Why is the application or Review tab sluggish?</summary><p>The reading and Review cards load progressively. If performance degrades, record your scale, window size, tab, specific Surah and corpus; do not repeatedly reinstall or reset user data as a first diagnostic step.</p></details>
+<details><summary>What if the word evidence pane shows missing content?</summary><p>Confirm the original word-by-word companion database remains with the application. The evidence inspector reads existing source data only and safely closes when unavailable.</p></details>
+<details><summary>How do I return to previous work?</summary><p>Use History and the Working Slices workspace, not a manually edited copy of SQLite. Restore only with a verified backup after reviewing its effects.</p></details>
+<details><summary>What if the icon looks blurry in Explorer?</summary><p>That is a Windows icon-size or cached-thumbnail issue, separate from Qur'anic source fidelity. Prefer original high-resolution icon source if available; changing resources in an accepted EXE changes its checksum.</p></details>
+</section>
+
+<section id="glossary"><h2>20. Key terms</h2>
+<table><tr><th>Term</th><th>Meaning within this workstation</th></tr>
+<tr><td>Ayah</td><td>A canonical numbered verse of the Qur'an; immutable source text.</td></tr>
+<tr><td>Surah</td><td>Canonical chapter; there are 114.</td></tr>
+<tr><td>Juz</td><td>Traditional Qur'an reading division; metadata, not a semantic Context boundary.</td></tr>
+<tr><td>Context Block</td><td>Consecutive Ayat judged to form one immediate meaningful discourse unit.</td></tr>
+<tr><td>Macro Group</td><td>Consecutive collection of fine Context Blocks forming a larger discourse progression.</td></tr>
+<tr><td>Related Workset</td><td>Proposed relationship between specific Context passages, potentially across Surahs.</td></tr>
+<tr><td>Proposal Corpus</td><td>An importable, attributed proposed structural reading, isolated from your active research.</td></tr>
+<tr><td>Working Slice</td><td>Persistent editable unit for translation reconciliation and revision.</td></tr>
+<tr><td>Provenance</td><td>Identity, date, source and revision information explaining where research or a proposal came from.</td></tr>
+<tr><td>Verified backup</td><td>Protected snapshot intended to preserve owner research state.</td></tr></table>
+</section>
+<footer>Guide version: Build 1.8 owner-test documentation. This guide is bundled locally with the executable and contains no external scripts, images, analytics, or network dependencies. If an owner-test changes feature labels, update this guide before accepting the build.</footer>
+</main></div>
+<script>
+function searchGuide(query){
+ const text=query.toLowerCase().trim();
+ document.querySelectorAll('main section').forEach(section=>{
+   section.hidden=Boolean(text)&&!section.textContent.toLowerCase().includes(text);
+ });
+}
+</script>
+</body>
+</html>
