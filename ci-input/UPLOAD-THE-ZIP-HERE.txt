@@ -1,0 +1,1 @@
+Upload the exact SCRATCHPAD-S1-BUILD-INPUT.zip to this folder on ci/pathfinder-scratchpad-s1-20261009. SHA-256: 282da643d184d4bc3e23e0e65098a367d5461f567175401f6080e3faae6ebc6e. Its addition triggers the Windows installer workflow. Do not upload to main.
