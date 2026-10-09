@@ -1,0 +1,56 @@
+name: THTRP Build 1.9 - Focused Windows Safety and Native Compile
+on:
+  push:
+    branches:
+      - ci/build-1.9
+    paths:
+      - CI-FAST-CHECKPOINT.json
+
+permissions:
+  contents: read
+concurrency:
+  group: thtrp-build19-fast
+  cancel-in-progress: true
+
+jobs:
+  quick-windows-validation:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      PRIVATE_SOURCE_SHA: a34a4522e17878c63ad4accca3a2779cc97bb6db
+    steps:
+      - name: Checkout temporary public CI mirror
+        uses: actions/checkout@v4
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify explicitly pinned private-source checkpoint
+        shell: pwsh
+        run: |
+          $p = Get-Content -Raw CI-FAST-CHECKPOINT.json | ConvertFrom-Json
+          if ($p.private_source_sha -ne $env:PRIVATE_SOURCE_SHA) { throw 'Source SHA mismatch.' }
+          if (!(Test-Path './src/QuranReconciliation/Infrastructure/ResearchDraftStore.cs')) { throw 'Draft recovery store missing.' }
+      - name: Verify crash-recoverable draft store with synthetic data
+        shell: pwsh
+        run: |
+          dotnet run --project ./tools/DraftRecoveryProbe/DraftRecoveryProbe.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Draft recovery regression probe failed.' }
+      - name: Compile native WinUI x64 from exact mirrored source
+        shell: pwsh
+        run: |
+          dotnet restore ./src/QuranReconciliation/QuranReconciliation.csproj -r win-x64
+          if ($LASTEXITCODE -ne 0) { throw 'WinUI restore failed.' }
+          dotnet build ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --no-restore -p:SourceRevisionId=$env:PRIVATE_SOURCE_SHA
+          if ($LASTEXITCODE -ne 0) { throw 'WinUI native compile failed.' }
+      - name: Verify inherited research and destructive-operation contracts
+        shell: pwsh
+        run: |
+          foreach ($proj in @(
+            'ContextWorkflowProbe', 'NoteWorkflowProbe', 'HistoryWorkflowProbe',
+            'WorkingSliceWorkflowProbe', 'V13ResearchOrganizationProbe',
+            'BackupWorkflowProbe', 'SafetyClosureProbe'
+          )) {
+            dotnet run --project "./tools/$proj/$proj.csproj" -c Release
+            if ($LASTEXITCODE -ne 0) { throw "$proj failed." }
+          }
