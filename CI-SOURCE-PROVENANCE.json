@@ -1,16 +1,17 @@
 {
   "package_type": "disposable_public_source_mirror",
-  "build": "Build 1.9 R1 - UNACCEPTED / remediation CI",
+  "build": "Build 1.9 R5 — UNACCEPTED owner-test candidate",
   "source_repository": "paglaaacoc/Quran-Reconciliation-Workstation",
   "source_branch": "dev/build-1.9-research-integrity-closure",
-  "source_candidate_sha": "0cff93d60463ff28463bc48ede35b1eb2440d912",
+  "source_candidate_sha": "faf5db8dfea6c57b86b0b96933b77570d66bcb81",
   "accepted_base_sha": "8a91a786f4df2d0c0b60d92cc781451e98fe6b0b",
-  "source_files_mirrored": 163,
+  "source_files_mirrored": 167,
   "mirror_policy": "Only src/scripts/tools and required CI metadata, no private git history or owner research. Source files SHA matched before Windows CI.",
   "owner_acceptance": "PENDING",
   "created_date": "2026-10-09",
   "mirror_checkout_policy": "Preserve source .gitattributes and exact LF for pinned Juz JSON.",
   "data_safety": "Do not upload real owner research or backup state.",
-  "last_verified_ci_tree": "8ba28929ea8b29597c4bb888352d57c1f9c5a005",
-  "last_ci_result": "37969639195: native compilation and research probes passed; legacy committed-reset recovery failed after digest strengthening. Rebuilt snapshot verification corrected."
+  "last_verified_ci_tree": "34116d57f35929e709b29ead9d6ba09ba675d1ff",
+  "last_ci_result": "37970167095 prior pre-draft full R1 CI: PASS. 37970980040 draft/native/safety focused CI: PASS. This R5 checkpoint revalidates the exact final combined source.",
+  "r5_owner_test_matrix": "docs/BUILD-1.9-OWNER-TEST-MATRIX.md (private)"
 }
