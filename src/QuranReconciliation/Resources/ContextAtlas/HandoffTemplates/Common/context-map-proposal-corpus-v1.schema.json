@@ -1,0 +1,541 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nivareq.com/schemas/thtrp-context-map-proposal-corpus-v1.schema.json",
+  "title": "THTRP Context Map Proposal Corpus v1 — native importer-aligned / Build 1.5",
+  "type": "object",
+  "$comment": "Read 02-IMPORT-PACKAGE-CONTRACT.md; schema alone cannot check consecutiveness, workset references or hashes.",
+  "required": [
+    "schema",
+    "schema_version",
+    "corpus_id",
+    "display_name",
+    "edition",
+    "status",
+    "published_date",
+    "contributors",
+    "lineage",
+    "evidence_policy",
+    "terminology",
+    "source_identity",
+    "statistics",
+    "surahs",
+    "cross_surah_worksets"
+  ],
+  "properties": {
+    "schema": {
+      "const": "thtrp.context-map-proposal-corpus"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "corpus_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "formal_title": {
+      "type": "string"
+    },
+    "edition": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "revised-proposed"
+      ]
+    },
+    "published_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "contributors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "role",
+          "provider",
+          "model_name",
+          "reasoning_mode"
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provider": {
+            "type": "string",
+            "minLength": 1
+          },
+          "model_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reasoning_mode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "methodology": {
+            "type": "string"
+          },
+          "date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "completed_utc": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "required": [
+        "kind",
+        "parent_corpus_id",
+        "parent_payload_sha256"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "independent_initial_edition",
+            "independent",
+            "revision"
+          ]
+        },
+        "parent_corpus_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "parent_payload_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "evidence_policy": {
+      "type": "object"
+    },
+    "terminology": {
+      "type": "object"
+    },
+    "source_identity": {
+      "type": "object"
+    },
+    "statistics": {
+      "type": "object",
+      "required": [
+        "surahs_audited",
+        "ayat_covered",
+        "total_context_blocks",
+        "total_internal_boundaries",
+        "juz_crossing_blocks",
+        "single_ayah_blocks",
+        "juz_coincident_internal_boundaries",
+        "macro_groups",
+        "cross_surah_worksets"
+      ],
+      "properties": {
+        "surahs_audited": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ayat_covered": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_context_blocks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_internal_boundaries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "juz_crossing_blocks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "single_ayah_blocks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "juz_coincident_internal_boundaries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macro_groups": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cross_surah_worksets": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "surahs": {
+      "type": "array",
+      "minItems": 114,
+      "maxItems": 114,
+      "items": {
+        "$ref": "#/$defs/surah"
+      }
+    },
+    "cross_surah_worksets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/workset"
+      }
+    },
+    "final_review": {}
+  },
+  "$defs": {
+    "block": {
+      "type": "object",
+      "required": [
+        "context_block_id",
+        "index",
+        "start",
+        "end",
+        "range",
+        "juz_start",
+        "juz_end",
+        "coherence_note",
+        "confidence"
+      ],
+      "properties": {
+        "context_block_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "range": {
+          "type": "string",
+          "minLength": 1
+        },
+        "juz_start": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "juz_end": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "coherence_note": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        }
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "required": [
+        "boundary_id",
+        "after_ayah",
+        "next_ayah",
+        "reason",
+        "confidence",
+        "english_used"
+      ],
+      "properties": {
+        "boundary_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "after_ayah": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "next_ayah": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "english_used": {
+          "type": "boolean"
+        }
+      }
+    },
+    "macro": {
+      "type": "object",
+      "required": [
+        "macro_group_id",
+        "start_ayah",
+        "end_ayah",
+        "verse_span",
+        "label",
+        "context_block_count",
+        "context_block_ids",
+        "context_ranges"
+      ],
+      "properties": {
+        "macro_group_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start_ayah": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_ayah": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "verse_span": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "context_block_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "context_block_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "context_ranges": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "source_label_original": {
+          "type": "string"
+        },
+        "terminology_normalized": {
+          "type": "boolean"
+        }
+      }
+    },
+    "workset_member": {
+      "type": "object",
+      "required": [
+        "surah_number",
+        "surah_name",
+        "start_ayah",
+        "end_ayah",
+        "verse_span",
+        "context_block_ids"
+      ],
+      "properties": {
+        "surah_number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 114
+        },
+        "surah_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start_ayah": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_ayah": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "verse_span": {
+          "type": "string",
+          "minLength": 1
+        },
+        "context_blocks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "context_block_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "workset_subset": {
+      "type": "object",
+      "required": [
+        "label",
+        "members"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "members": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/workset_member"
+          }
+        }
+      }
+    },
+    "workset": {
+      "type": "object",
+      "required": [
+        "id",
+        "label",
+        "members",
+        "subsets"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "note": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/workset_member"
+          }
+        },
+        "subsets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/workset_subset"
+          }
+        },
+        "source_label_original": {
+          "type": "string"
+        },
+        "source_note_original": {
+          "type": "string"
+        }
+      }
+    },
+    "surah": {
+      "type": "object",
+      "required": [
+        "surah_number",
+        "surah_name",
+        "verses_count",
+        "context_blocks",
+        "boundaries",
+        "macro_groups",
+        "importer_ranges"
+      ],
+      "properties": {
+        "surah_number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 114
+        },
+        "surah_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verses_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "proposal_status": {
+          "type": "string"
+        },
+        "surah_flags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "context_blocks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/block"
+          }
+        },
+        "boundaries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/boundary"
+          }
+        },
+        "macro_groups": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/macro"
+          }
+        },
+        "importer_ranges": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}
