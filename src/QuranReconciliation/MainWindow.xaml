@@ -44,7 +44,7 @@
                                FontSize="29"
                                FontWeight="SemiBold"/>
                     <TextBlock x:Name="TopBarSubtitleText"
-                               Text="Build 1.8 · Owner-test candidate"
+                               Text="Build 1.9 R1 · UNACCEPTED development candidate"
                                Foreground="{StaticResource MutedTextBrush}"
                                FontSize="15"
                                Margin="0,3,0,0"/>
