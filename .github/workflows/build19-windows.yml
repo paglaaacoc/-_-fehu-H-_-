@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - ci/build-1.9
+    paths:
+      - CI-SOURCE-PROVENANCE.json
 
 permissions:
   contents: read
