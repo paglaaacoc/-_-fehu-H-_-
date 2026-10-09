@@ -6,6 +6,7 @@ on:
       - ci/pathfinder-scratchpad-s1-20261009
     paths:
       - ci-input/SCRATCHPAD-S1-BUILD-INPUT.zip
+      - .github/workflows/pathfinder-scratchpad-s1.yml
 
 permissions:
   contents: read
@@ -71,6 +72,20 @@ jobs:
             'stage\installer\Pathfinder-x64.iss',
             'stage\installer\Pathfinder-ARM64.iss'
           )) { if (-not (Test-Path -LiteralPath $p)) { throw "Build input incomplete: $p" } }
+
+      - name: Repair known packaging-script PowerShell interpolation typo (CI staged copy only)
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $script = (Resolve-Path 'stage\\tools\\build-scratchpad-s1-locally.ps1').Path
+          $raw = [IO.File]::ReadAllText($script)
+          $bad = 'published $arch: $asset'
+          if (-not $raw.Contains($bad)) { throw 'Frozen S1 input build-script fingerprint differs from expected.' }
+          $fixed = $raw.Replace($bad, 'published ${arch}: $asset')
+          [IO.File]::WriteAllText($script, $fixed, [Text.UTF8Encoding]::new($false))
+          $tokens = $null; $parseErrors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile($script, [ref]$tokens, [ref]$parseErrors)
+          if ($parseErrors.Count -gt 0) { throw ("Build script still has a PowerShell parse error: " + ($parseErrors | Out-String)) }
+          Write-Host 'Staged build-only script parsed successfully. Frozen source ZIP and app source unmodified.'
 
       - name: Build both Windows installers without release or deployment
         run: |
