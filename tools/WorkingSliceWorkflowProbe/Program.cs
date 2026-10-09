@@ -185,6 +185,26 @@ try
     Require(invalidRangeRejected,
         "Working Slice range must stay inside the parent Context Block.");
 
+    // Build 1.9 literal-query regression. Wildcard characters typed by the
+    // owner must never turn into full-table SQL LIKE wildcard searches.
+    WorkingSlice literal = repo.Create(
+        new WorkingSliceCreateRequest(
+            2, 1, 7, 9, "Literal % underscore _ slash \\ in research"));
+    Require(repo.List("All", "%").Count == 1 &&
+            repo.List("All", "%")[0].Id == literal.Id,
+        "Percent search must match a literal percent, not all slices.");
+    Require(repo.List("All", "_").Count == 1 &&
+            repo.List("All", "_")[0].Id == literal.Id,
+        "Underscore search must match literal underscore only.");
+    Require(repo.List("All", "\\").Count == 1 &&
+            repo.List("All", "\\")[0].Id == literal.Id,
+        "Backslash search must match literal slash, not malformed ESCAPE SQL.");
+    Require(repo.List("All", "absent%").Count == 0,
+        "Wildcards must not broaden an otherwise unmatched literal search.");
+
+    Console.WriteLine(
+        "Build 1.9 literal Working Slice search: PASS");
+
     Console.WriteLine(
         "Build 10 R12 Working Slice persistence/revision/removal contract: PASS");
 }

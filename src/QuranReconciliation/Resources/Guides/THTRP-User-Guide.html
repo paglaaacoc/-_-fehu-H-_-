@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Holy Quran TRP — Complete Offline User Guide · Build 1.9 R1</title>
+<title>The Holy Quran TRP — Complete Offline User Guide · Build 1.9 R5</title>
 <style>
 :root{color-scheme:light dark;font-family:"Segoe UI",system-ui,Arial,sans-serif;--bg:#f4f7fa;--paper:#fff;--ink:#152634;--muted:#526779;--line:#d9e2e9;--accent:#146794;--soft:#edf5fa}
 @media(prefers-color-scheme:dark){:root{--bg:#0d1721;--paper:#142331;--ink:#f1f5f8;--muted:#a6b7c6;--line:#344c5c;--accent:#8ad3fb;--soft:#203746}}
@@ -27,7 +27,7 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 </style>
 </head>
 <body>
-<header><h1>The Holy Quran TRP</h1><p>Complete offline user guide · Build 1.9 R1 · Windows native · The Holy Translation Reconciliation Project</p></header>
+<header><h1>The Holy Quran TRP</h1><p>Complete offline user guide · Build 1.9 R5 · Windows native · The Holy Translation Reconciliation Project</p></header>
 <div class="shell">
 <nav aria-label="Guide contents">
 <strong>Contents</strong>
@@ -64,7 +64,7 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 <ol><li>Extract the complete Windows ZIP to a dedicated writable folder; do not run the executable from inside the compressed archive.</li>
 <li>Keep the provided <code>Corpus</code>, <code>Fonts</code> and associated application files together. Missing companion files cause incomplete or unavailable evidence.</li>
 <li>Launch <strong>The Holy Quran TRP.exe</strong>. Allow local workspace initialization to finish.</li>
-<li>Check the build label under the title. For this guide it should identify <strong>Build 1.9 R1</strong>.</li>
+<li>Check the build label under the title. For this guide it should identify <strong>Build 1.9 R5</strong>.</li>
 <li>Choose a comfortable theme and font zoom. Review the three Arabic-script display toggles before starting.</li>
 <li>Use <strong>Data safety → Create verified backup</strong> before significant experimental changes, and keep additional backup copies outside the application folder.</li></ol>
 <p>The Windows SmartScreen warning sometimes shown for an unsigned executable concerns publisher reputation; it does not prove the application is infected or certify it is safe. Verify the ZIP's source and hash before deciding whether to run it.</p>
@@ -84,7 +84,7 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 
 <section id="notes"><h2>5. Notes, statuses and provenance</h2>
 <p>Ayah notes, Context notes and their revisions are persistent parts of your research. Select the correct Ayah or Context before editing. Use each note to record interpretive questions, source comparisons and the reasoning behind a boundary or translation choice. Apply status labels consistently; a status should represent <em>your</em> actual level of review, not an AI model's confidence.</p>
-<p>Where the interface marks unsaved or dirty state, complete or discard the edit deliberately before changing workflows. History contains organized prior work and timestamps. The Context Atlas sidebar deliberately provides <em>read-only snapshots</em> of overlapping research; it is not a second editor.</p>
+<p>Where the interface marks unsaved or dirty state, your edits are retained under their original Ayah/Context identity across routine navigation and can be restored as recoverable drafts after restarting. They are not canonical until you explicitly Save. History contains saved prior work and timestamps; the Context Atlas sidebar deliberately provides <em>read-only snapshots</em> rather than a second editor.</p>
 </section>
 
 <section id="slices"><h2>6. Working Slices</h2>
@@ -110,25 +110,25 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 <p><strong>Read Ayat</strong> is available from many Atlas results. It opens local Qur'an evidence without creating a Working Slice, changing segmentation or writing notes.</p>
 </section>
 
-<section id="compare"><h2>9. Comparing Context proposals — Build 1.9 R1</h2>
+<section id="compare"><h2>9. Comparing Context proposals — Build 1.9 R5</h2>
 <ol><li>Import a second validated Proposal Corpus or choose any two already available corpora.</li><li>Open <strong>Context Atlas → Compare</strong> and choose <strong>Corpus A</strong> and <strong>Corpus B</strong>.</li><li>Use the Surah list to focus the comparison. The overview reports shared, A-only and B-only boundaries and exact matching fine ranges.</li><li>Use <strong>Previous difference</strong> and <strong>Next difference</strong> to inspect one disputed Ayah transition at a time.</li><li>Read the actual Contexts containing the Ayah before and after the transition, their coherence notes, boundary reasons and Macro Group labels side by side.</li><li>Choose <strong>Read Ayat side by side</strong> (or <strong>Read A/B Ayat</strong> from either column) to open two independently scrollable canonical Arabic readers. Each follows its own corpus's actual Context boundaries, while marking the disputed Ayah transition in both.</li><li>Optionally select one English or Bengali translation for both panes; the sources, zoom and Arabic-script controls apply consistently. Choose <strong>Back to Compare</strong> without altering research state.</li><li>Use <strong>Ayah Evidence</strong> or <strong>Pin Context</strong> for closer analysis.</li></ol>
 <p><strong>Session restoration:</strong> when you switch from Context Atlas to Research, Working Slices, History, or another app workspace and return during the same launch, Atlas keeps the selected tab, Corpus A/B choices, Surah, disagreement and reading/scroll position. Pins remain session-only. Explicitly importing or removing a corpus refreshes the list; a removed corpus cannot be restored and receives a safe fallback.</p>
 <p>An <strong>A-only boundary</strong> means Corpus A separates Ayat at that position while B keeps them within one fine Context. A <strong>B-only boundary</strong> means the reverse. Neither is automatically right. The comparison is aligned by Ayah reference, <em>not</em> by Context Block ordinal number: Context 3 in one corpus need not correspond to Context 3 in another.</p>
 <div class="callout">Compare is for <strong>evaluation</strong>, never automatic reconciliation. It does not promote either AI proposal into editable owner research.</div>
 </section>
 
-<section id="pins"><h2>10. Pin &amp; Compare — Build 1.9 R1</h2>
+<section id="pins"><h2>10. Pin &amp; Compare — Build 1.9 R5</h2>
 <p>Use <strong>Pin</strong> from an Atlas Context card, <strong>Pin Context</strong> from Compare, or <strong>Pin this Ayah</strong> from an open Read Ayat preview. Pins form a temporary list that can contain passages from several Surahs.</p>
 <p>Open the <strong>Pins</strong> tab. Select any stored passage as <strong>A</strong> and another as <strong>B</strong>. The pinned comparison shows bounded local Uthmani Arabic evidence for up to the first three Ayat of each passage. Use <strong>Read full passage</strong> for a long Context. You can remove a pin or clear the session tray. There is a safety cap of 40 entries.</p>
 <p><strong>Nothing in Pins is saved to research.sqlite</strong>. Pins are intentionally discarded after you close the application. Do not use this tray as a substitute for durable notes, Working Slices or bookmarks.</p>
 </section>
 
-<section id="evidence"><h2>11. Ayah Evidence — Build 1.9 R1</h2>
+<section id="evidence"><h2>11. Ayah Evidence — Build 1.9 R5</h2>
 <p>From Read Ayat or a Compare disagreement, select <strong>Ayah Evidence</strong> for an individual Ayah. This opens a read-only window containing existing local word-by-word positions, Arabic words, transliterations and English word meanings, plus research Context overlap, note counts and Working Slice references where available.</p>
 <p>The evidence view uses the existing local word-by-word database and a SELECT-only summary of your research database. It neither edits notes nor assumes a proposed Context is correct. Word meanings and transliterations are reference aids, not substitutes for interpreting the Arabic sentence and larger discourse.</p>
 </section>
 
-<section id="surround"><h2>12. Read in surrounding Context — Build 1.9 R1</h2>
+<section id="surround"><h2>12. Read in surrounding Context — Build 1.9 R5</h2>
 <p>While Read Ayat is open, select <strong>Show up to 3 Ayat before and after (outside selected Context)</strong> to view neighboring evidence at the passage boundary. The feature automatically stops at a Surah edge. Surrounding Ayat use a different background and display an explicit <strong>Outside selected Context</strong> label.</p>
 <p>These neighboring Ayat remain outside the selected proposal block. Their presence does not redefine the Context boundary or affect saved research. Uncheck the option to return to the selected passage alone. The preview remains lazy and its translation-source selectors can still be used.</p>
 </section>
@@ -145,7 +145,8 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 </section>
 
 <section id="backups"><h2>15. Data safety, verified backup, restore and reset</h2>
-<p><strong>Ask before closing app:</strong> Open <strong>Data safety</strong> and check or uncheck the option. Enabled by default, this preference is stored in portable Settings and remembers your choice on later launches. When on, normal Windows close actions, including X and Alt+F4, ask for confirmation before exiting. Choose <em>Keep working</em> to retain current in-memory text and workspace state. The close prompt does not save unsaved notes for you and cannot intercept a crash, forced process kill or power failure. Backup/restore/reset still follow their existing protected processes.</p>
+<p><strong>Ask before closing app:</strong> Open <strong>Data safety</strong> and check or uncheck the routine close-confirmation option. Enabled by default, this setting remembers your preference. <strong>Uncommitted research is guarded independently:</strong> even if routine confirmation is off, an ordinary Windows close asks before leaving with drafts. Changes to Working Slices, Ayah notes, and Context notes are separately checkpointed to portable <code>Data/recoverable-drafts.json</code> while you type and before ordinary navigation/close; restart restores drafts to their original editors, not automatically to committed research.</p>
+<p><strong>Recoverable drafts are NOT saved research:</strong> they do not create SQLite revisions, and the verified owner-data backup deliberately includes committed research and settings only. Review and explicitly <em>Save</em> recovered drafts after restarting. Periodic checkpoints reduce unexpected-shutdown losses, but the most recent unsaved keystrokes can still be lost during sudden power failure; create verified backups for committed research. A malformed or future-schema draft file is preserved and refused instead of silently overwritten. Deliberately discarding drafts before restore/reset clears their recovery sidecar; if that cannot be completed, the destructive operation stops.</p>
 <p>The bottom navigation contains <strong>Data safety</strong> with verified backup, restore and reset controls. Treat these as high-consequence operations, not routine appearance preferences.</p>
 <ol><li>Before meaningful research or substantial changes, use <strong>Create verified backup</strong> and ensure the backup completes successfully.</li><li>Store a copy outside the active workstation directory—ideally on another storage device or protected location.</li><li>Before restore, verify that you selected the intended backup. Restoration replaces active research state according to the application's existing guarded process.</li><li>Before reset, make and independently preserve a verified backup. Read every destructive-operation confirmation carefully.</li><li>Never overwrite the app's generated research files by manually copying individual SQLite files while the program is open.</li></ol>
 <div class="callout"><strong>Research safety priority:</strong> Backup protects durable owner research. The Atlas ZIP is a separate proposed scholarship package and must not be confused with a verified backup of your work.</div>
@@ -198,7 +199,7 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 <tr><td>Provenance</td><td>Identity, date, source and revision information explaining where research or a proposal came from.</td></tr>
 <tr><td>Verified backup</td><td>Protected snapshot intended to preserve owner research state.</td></tr></table>
 </section>
-<footer>Guide version: Build 1.9 R1 development documentation · UNACCEPTED. This guide is bundled locally with the executable and contains no external scripts, images, analytics, or network dependencies. If an owner-test changes feature labels, update this guide before accepting the build.</footer>
+<footer>Guide version: Build 1.9 R5 development documentation · UNACCEPTED. This guide is bundled locally with the executable and contains no external scripts, images, analytics, or network dependencies. If an owner-test changes feature labels, update this guide before accepting the build.</footer>
 </main></div>
 <script>
 function searchGuide(query){

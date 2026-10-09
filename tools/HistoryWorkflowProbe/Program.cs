@@ -246,6 +246,14 @@ try
             "Open parent context",
         "Organized History must preserve removed Working Slice audit state without reopening it.");
 
+    Require(
+        history.SearchTimeline("%", "All", 2, 50).Count == 0 &&
+        history.SearchOrganized("%", "All", 2, 50).Count == 0,
+        "Build 1.9 History percent search must not behave as SQL LIKE wildcard.");
+
+    Console.WriteLine(
+        "Build 1.9 literal History query: PASS");
+
     Console.WriteLine(
         "v1.3 Organized History + immutable Timeline contract: PASS");
 }
