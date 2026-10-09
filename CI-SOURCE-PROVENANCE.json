@@ -1,0 +1,14 @@
+{
+  "package_type": "disposable_public_source_mirror",
+  "build": "Build 1.9 R1 - UNACCEPTED",
+  "source_repository": "paglaaacoc/Quran-Reconciliation-Workstation",
+  "source_branch": "dev/build-1.9-research-integrity-closure",
+  "source_candidate_sha": "2c3960594122b927aad74addf6ab19385a27845e",
+  "accepted_base_sha": "8a91a786f4df2d0c0b60d92cc781451e98fe6b0b",
+  "source_files_mirrored": 163,
+  "mirror_policy": "Only src/scripts/tools and required CI metadata, no private git history or owner research. Source files SHA matched before Windows CI.",
+  "owner_acceptance": "PENDING; NOT ACCEPTED",
+  "created_date": "2026-10-09",
+  "mirror_checkout_policy": "Preserve source .gitattributes and exact LF for pinned Juz JSON.",
+  "data_safety": "Do not upload real owner research or backup state."
+}
