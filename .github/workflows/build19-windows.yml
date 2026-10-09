@@ -1,4 +1,4 @@
-name: The Holy Quran TRP Build 1.9 R1 - Integrated Research Workstation CI
+name: The Holy Quran TRP Build 1.9 R5 - Integrated Research Workstation CI
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 90
     env:
-      SOURCE_CANDIDATE_SHA: 0cff93d60463ff28463bc48ede35b1eb2440d912
+      SOURCE_CANDIDATE_SHA: faf5db8dfea6c57b86b0b96933b77570d66bcb81
       ACCEPTED_BASE_SHA: 8a91a786f4df2d0c0b60d92cc781451e98fe6b0b
       THTRP_CI_MIRROR: '1'
 
@@ -52,7 +52,7 @@ jobs:
           Write-Host "Authoritative source candidate: $($p.source_candidate_sha)"
           Write-Host "Frozen rollback ancestor: $($p.accepted_base_sha)"
 
-      - name: Verify Build 1.9 R1 source, guide and contract
+      - name: Verify Build 1.9 R5 source, guide and contract
         shell: pwsh
         run: |
           $root = './src/QuranReconciliation'
@@ -63,14 +63,14 @@ jobs:
             'Resources/ContextAtlas/HandoffTemplates/Common/02-IMPORT-PACKAGE-CONTRACT.md',
             'Resources/ContextAtlas/HandoffTemplates/Common/scripts/validate_proposal_package.py'
           )) {
-            if (!(Test-Path (Join-Path $root $file))) { throw "Build 1.9 R1 file missing: $file" }
+            if (!(Test-Path (Join-Path $root $file))) { throw "Build 1.9 R5 file missing: $file" }
           }
           $xaml = Get-Content -Raw "$root/MainWindow.xaml"
-          foreach ($marker in @('Build 1.9 R1','AtlasPinsTabButton','AtlasReadingSurroundingToggle','OpenUserGuide_Click','AtlasCompareReadingGrid','AtlasCompareReadingLeftScroll','AtlasCompareReadingRightScroll')) {
-            if (!$xaml.Contains($marker)) { throw "Build 1.9 R1 XAML missing: $marker" }
+          foreach ($marker in @('Build 1.9 R5','AtlasPinsTabButton','AtlasReadingSurroundingToggle','OpenUserGuide_Click','AtlasCompareReadingGrid','AtlasCompareReadingLeftScroll','AtlasCompareReadingRightScroll')) {
+            if (!$xaml.Contains($marker)) { throw "Build 1.9 R5 XAML missing: $marker" }
           }
           $identity = Get-Content -Raw "$root/Infrastructure/BuildIdentity.cs"
-          if (!$identity.Contains('"Build 1.9 R1"')) { throw 'Stale native Windows title.' }
+          if (!$identity.Contains('"Build 1.9 R5"')) { throw 'Stale native Windows title.' }
           $paired = Get-Content -Raw "$root/MainWindow.ContextAtlasPairedReader.cs"
           foreach ($marker in @(
             'ReadRange(', 'AppendAtlasPairedReaderCards', 'RefreshAtlasPairedReadingWidths',
@@ -102,7 +102,13 @@ jobs:
           if (!$xaml.Contains('ConfirmExitMenuItem') -or !$settings.Contains('ConfirmBeforeExit')) {
             throw 'Persisted optional exit control absent.'
           }
-          Write-Host 'Build 1.9 R1 Working Slice and optional exit safety gate: PASS'
+          Write-Host 'Build 1.9 R5 Working Slice and optional exit safety gate: PASS'
+
+      - name: Test portable crash-recoverable research drafts
+        shell: pwsh
+        run: |
+          dotnet run --project ./tools/DraftRecoveryProbe/DraftRecoveryProbe.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Portable draft recovery test failed.' }
 
       - name: Compile v1.4 Context Atlas probe
         shell: pwsh
@@ -111,7 +117,7 @@ jobs:
           dotnet build ./tools/V14ContextAtlasProbe/V14ContextAtlasProbe.csproj -c Release --no-restore
           if ($LASTEXITCODE -ne 0) { throw "v1.4 Context Atlas probe compile failed." }
 
-      - name: Compile native WinUI Build 1.9 R1 before long corpus jobs
+      - name: Compile native WinUI Build 1.9 R5 before long corpus jobs
         shell: pwsh
         run: |
           dotnet restore ./src/QuranReconciliation/QuranReconciliation.csproj -r win-x64
@@ -286,12 +292,12 @@ jobs:
           -p:WindowsAppSDKSelfContained=true
           -p:WindowsPackageType=None
           -p:SourceRevisionId=$env:SOURCE_CANDIDATE_SHA
-          -o ./artifacts/The-Holy-Quran-TRP-Build-1.9-R1-win-x64
+          -o ./artifacts/The-Holy-Quran-TRP-Build-1.9-R5-win-x64
 
       - name: Verify packaged Context Atlas immutable resources
         shell: pwsh
         run: |
-          $root = './artifacts/The-Holy-Quran-TRP-Build-1.9-R1-win-x64'
+          $root = './artifacts/The-Holy-Quran-TRP-Build-1.9-R5-win-x64'
           $builtIn = Join-Path $root 'Corpus/ContextAtlas/BuiltIn'
           $templates = Join-Path $root 'Corpus/ContextAtlas/HandoffTemplates'
           $parts = @(Get-ChildItem $builtIn -Filter '*.b64part' -File | Sort-Object Name)
@@ -324,7 +330,7 @@ jobs:
         shell: pwsh
         run: |
           Add-Type -AssemblyName System.Drawing
-          $root = './artifacts/The-Holy-Quran-TRP-Build-1.9-R1-win-x64'
+          $root = './artifacts/The-Holy-Quran-TRP-Build-1.9-R5-win-x64'
           $iconPath = Join-Path $root 'Assets/QuranReconciliation.ico'
           $exe = Join-Path $root 'The Holy Quran TRP.exe'
           $sourceIcon = [System.Drawing.Icon]::new($iconPath)
@@ -351,7 +357,7 @@ jobs:
       - name: Verify compiled Per-Monitor V2 manifest
         shell: pwsh
         run: |
-          $exe = './artifacts/The-Holy-Quran-TRP-Build-1.9-R1-win-x64/The Holy Quran TRP.exe'
+          $exe = './artifacts/The-Holy-Quran-TRP-Build-1.9-R5-win-x64/The Holy Quran TRP.exe'
           $binary = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($exe))
           foreach ($needle in @('true/PM','PerMonitorV2, PerMonitor','Microsoft.UI.Dispatching.DispatcherQueue')) {
             if (-not $binary.Contains($needle)) { throw "Compiled manifest missing: $needle" }
@@ -360,7 +366,7 @@ jobs:
       - name: Bundle pinned Quran Foundation fonts
         shell: pwsh
         run: |
-          $root = './artifacts/The-Holy-Quran-TRP-Build-1.9-R1-win-x64'
+          $root = './artifacts/The-Holy-Quran-TRP-Build-1.9-R5-win-x64'
           $fonts = Join-Path $root 'Fonts'
           New-Item -ItemType Directory -Path $fonts -Force | Out-Null
           $indo = Join-Path $fonts 'indopak-nastaleeq-waqf-lazim-v4.2.1.ttf'
@@ -373,7 +379,7 @@ jobs:
       - name: Add exact primary and supplementary corpora
         shell: pwsh
         run: |
-          $target = './artifacts/The-Holy-Quran-TRP-Build-1.9-R1-win-x64/Corpus'
+          $target = './artifacts/The-Holy-Quran-TRP-Build-1.9-R5-win-x64/Corpus'
           New-Item -ItemType Directory -Path $target -Force | Out-Null
           Copy-Item './artifacts/Corpus/*' $target -Recurse -Force
           foreach ($required in @('corpus.sqlite','word-by-word.sqlite','juz-map.json')) {
@@ -383,7 +389,7 @@ jobs:
       - name: Launch v1.4 real-corpus workstation
         shell: pwsh
         run: |
-          $root = Resolve-Path './artifacts/The-Holy-Quran-TRP-Build-1.9-R1-win-x64'
+          $root = Resolve-Path './artifacts/The-Holy-Quran-TRP-Build-1.9-R5-win-x64'
           $exe = Join-Path $root 'The Holy Quran TRP.exe'
           $process = Start-Process -FilePath $exe -PassThru
           $diag = Join-Path $root 'Diagnostics/startup.log'
@@ -420,12 +426,12 @@ jobs:
 
       - name: Inspect packaged research DB remains schema 7
         shell: pwsh
-        run: dotnet run --project ./tools/ContextWorkflowProbe/ContextWorkflowProbe.csproj -c Release -- --inspect ./artifacts/The-Holy-Quran-TRP-Build-1.9-R1-win-x64/Data/research.sqlite
+        run: dotnet run --project ./tools/ContextWorkflowProbe/ContextWorkflowProbe.csproj -c Release -- --inspect ./artifacts/The-Holy-Quran-TRP-Build-1.9-R5-win-x64/Data/research.sqlite
 
       - name: Verify portable research-state relocation
         shell: pwsh
         run: |
-          $root = Resolve-Path './artifacts/The-Holy-Quran-TRP-Build-1.9-R1-win-x64'
+          $root = Resolve-Path './artifacts/The-Holy-Quran-TRP-Build-1.9-R5-win-x64'
           dotnet run --project ./tools/PortabilityProbe/PortabilityProbe.csproj -c Release -- --seed $root
           if ($LASTEXITCODE -ne 0) { throw 'Portability seed failed.' }
           $relocated = './artifacts/v14-portability-relocated'
@@ -441,7 +447,7 @@ jobs:
       - name: Clean generated owner state
         shell: pwsh
         run: |
-          $root = './artifacts/The-Holy-Quran-TRP-Build-1.9-R1-win-x64'
+          $root = './artifacts/The-Holy-Quran-TRP-Build-1.9-R5-win-x64'
           Remove-Item (Join-Path $root 'Data') -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item (Join-Path $root 'Backups') -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item (Join-Path $root 'Diagnostics') -Recurse -Force -ErrorAction SilentlyContinue
@@ -449,7 +455,7 @@ jobs:
       - name: Upload v1.4 portable owner-test artifact
         uses: actions/upload-artifact@v4
         with:
-          name: The-Holy-Quran-TRP-Build-1.9-R1-win-x64
-          path: artifacts/The-Holy-Quran-TRP-Build-1.9-R1-win-x64/
+          name: The-Holy-Quran-TRP-Build-1.9-R5-win-x64
+          path: artifacts/The-Holy-Quran-TRP-Build-1.9-R5-win-x64/
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 7
