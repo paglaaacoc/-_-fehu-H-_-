@@ -19,7 +19,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 90
     env:
-      SOURCE_CANDIDATE_SHA: faf5db8dfea6c57b86b0b96933b77570d66bcb81
+      SOURCE_CANDIDATE_SHA: 6b54c3987934caa860094adcbc92ccf504b9342b
       ACCEPTED_BASE_SHA: 8a91a786f4df2d0c0b60d92cc781451e98fe6b0b
       THTRP_CI_MIRROR: '1'
 
