@@ -1,0 +1,1575 @@
+<Window
+    x:Class="QuranReconciliation.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:controls="using:QuranReconciliation.Controls">
+
+    <Grid x:Name="RootGrid"
+          Loaded="RootGrid_Loaded"
+          KeyboardAcceleratorPlacementMode="Hidden">
+        <Grid.Resources>
+            <SolidColorBrush x:Key="AppBackgroundBrush" Color="#FFF6FAFF"/>
+            <SolidColorBrush x:Key="PanelBrush" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="PanelAltBrush" Color="#FFF0F5FA"/>
+            <SolidColorBrush x:Key="CardBrush" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="BorderBrush" Color="#FFCAD5E1"/>
+            <SolidColorBrush x:Key="TextBrush" Color="#FF15202B"/>
+            <SolidColorBrush x:Key="MutedTextBrush" Color="#FF607080"/>
+            <SolidColorBrush x:Key="AccentBrush" Color="#FF1677C8"/>
+        </Grid.Resources>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border x:Name="TopBarBorder"
+                Grid.Row="0"
+                Background="{StaticResource PanelBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="24,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock x:Name="TopBarTitleText"
+                               Text="The Holy Quran TRP"
+                               Foreground="{StaticResource TextBrush}"
+                               FontSize="29"
+                               FontWeight="SemiBold"/>
+                    <TextBlock x:Name="TopBarSubtitleText"
+                               Text="Build 1.8 · Owner-test candidate"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               FontSize="15"
+                               Margin="0,3,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="Theme"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <ComboBox x:Name="ThemeSelector"
+                              Width="190"
+                              SelectionChanged="ThemeSelector_SelectionChanged"
+                              Margin="0,0,18,0">
+                        <ComboBoxItem Content="Light · Daylight" Tag="Daylight"/>
+                        <ComboBoxItem Content="Light · Paper Sage" Tag="Paper Sage"/>
+                        <ComboBoxItem Content="Light · Warm Sand" Tag="Warm Sand"/>
+                        <ComboBoxItem Content="Night · Midnight Blue" Tag="Midnight Blue"/>
+                        <ComboBoxItem Content="Night · Twilight Plum" Tag="Twilight Plum"/>
+                        <ComboBoxItem Content="Night · Forest Night" Tag="Forest Night"/>
+                        <ComboBoxItem Content="OLED · Pure" Tag="OLED Pure"/>
+                        <ComboBoxItem Content="OLED · Cyan" Tag="OLED Cyan"/>
+                        <ComboBoxItem Content="OLED · Amber" Tag="OLED Amber"/>
+                    </ComboBox>
+
+                    <TextBlock Text="Zoom"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <Button Content="−"
+                            Width="38"
+                            Height="34"
+                            Click="ZoomOut_Click"/>
+                    <Button x:Name="ZoomResetButton"
+                            Content="100%"
+                            MinWidth="64"
+                            Height="34"
+                            Margin="6,0"
+                            Click="ZoomReset_Click"/>
+                    <Button Content="+"
+                            Width="38"
+                            Height="34"
+                            Click="ZoomIn_Click"
+                            Margin="0,0,20,0"/>
+
+                    <CheckBox x:Name="UthmaniToggle"
+                              Content="Uthmani"
+                              Foreground="{StaticResource TextBrush}"
+                              Margin="7,0"
+                              IsChecked="True"
+                              Checked="ArabicVisibilityChanged"
+                              Unchecked="ArabicVisibilityChanged"/>
+                    <CheckBox x:Name="IndoPakToggle"
+                              Content="IndoPak"
+                              Foreground="{StaticResource TextBrush}"
+                              Margin="7,0"
+                              IsChecked="True"
+                              Checked="ArabicVisibilityChanged"
+                              Unchecked="ArabicVisibilityChanged"/>
+                    <CheckBox x:Name="NastaleeqToggle"
+                              Content="IndoPak Nastaleeq"
+                              Foreground="{StaticResource TextBrush}"
+                              Margin="7,0,0,0"
+                              IsChecked="True"
+                              Checked="ArabicVisibilityChanged"
+                              Unchecked="ArabicVisibilityChanged"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid x:Name="WorkspaceGrid"
+              Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftSidebarColumn" Width="300"/>
+                <ColumnDefinition x:Name="LeftSplitterColumn" Width="6"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="RightSplitterColumn" Width="6"/>
+                <ColumnDefinition x:Name="RightSidebarColumn" Width="370"/>
+            </Grid.ColumnDefinitions>
+
+            <Border x:Name="LeftSidebarBorder"
+                    Grid.Column="0"
+                    Background="{StaticResource PanelAltBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,0,1,0"
+                    Padding="14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Margin="4,4,4,12">
+                        <TextBlock Text="Surah / সূরা"
+                                   Foreground="{StaticResource TextBrush}"
+                                   FontSize="22"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="114 surahs · local corpus"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   FontSize="14"
+                                   Margin="0,3,0,0"/>
+                        <TextBlock Text="Juz / পারা"
+                                   Foreground="{StaticResource TextBrush}"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Margin="0,12,0,5"/>
+                        <controls:OuterScrollComboBox x:Name="JuzSelector"
+                                                     HorizontalAlignment="Stretch"
+                                                     SelectionChanged="JuzSelector_SelectionChanged"/>
+                        <TextBlock x:Name="CurrentJuzText"
+                                   Text="Juz metadata loading…"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <controls:OuterScrollListView x:Name="SurahList"
+                              Grid.Row="1"
+                              Background="Transparent"
+                              SelectionChanged="SurahList_SelectionChanged"
+                              HorizontalContentAlignment="Stretch"
+                              ScrollViewer.VerticalScrollMode="Enabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              ScrollViewer.HorizontalScrollMode="Disabled"
+                              ScrollViewer.HorizontalScrollBarVisibility="Hidden"/>
+                </Grid>
+            </Border>
+
+            <primitives:Thumb x:Name="LeftSidebarSplitter"
+                              Grid.Column="1"
+                              DragDelta="LeftSidebarSplitter_DragDelta"
+                              Background="{StaticResource BorderBrush}"/>
+
+            <Border x:Name="CenterWorkspaceBorder"
+                    Grid.Column="2"
+                    Background="{StaticResource AppBackgroundBrush}"
+                    SizeChanged="ClipRegionToBounds_SizeChanged">
+                <ScrollViewer x:Name="WorkspaceScrollViewer"
+                              Background="{StaticResource AppBackgroundBrush}"
+                              HorizontalContentAlignment="Stretch"
+                              ZoomMode="Disabled"
+                              SizeChanged="WorkspaceScrollViewer_SizeChanged"
+                              ViewChanged="WorkspaceScrollViewer_ViewChanged"
+                              HorizontalScrollMode="Disabled"
+                              HorizontalScrollBarVisibility="Hidden"
+                              VerticalScrollMode="Enabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="WorkspaceContentPanel"
+                                Margin="24"
+                                MinWidth="720">
+                        <Border Background="{StaticResource PanelBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="20"
+                                Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock x:Name="SurahTitleText"
+                                           Foreground="{StaticResource TextBrush}"
+                                           FontSize="26"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock x:Name="SurahMetaText"
+                                           Foreground="{StaticResource MutedTextBrush}"
+                                           FontSize="15"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel x:Name="VersePanel"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <primitives:Thumb x:Name="RightSidebarSplitter"
+                              Grid.Column="3"
+                              DragDelta="RightSidebarSplitter_DragDelta"
+                              Background="{StaticResource BorderBrush}"/>
+
+            <Border x:Name="RightSidebarBorder"
+                    Grid.Column="4"
+                    Background="{StaticResource PanelAltBrush}"
+                    SizeChanged="ClipRegionToBounds_SizeChanged"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1,0,0,0">
+                <ScrollViewer x:Name="RightSidebarScrollViewer"
+                              Background="{StaticResource PanelAltBrush}"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalScrollMode="Enabled"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollMode="Disabled"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Padding="14"
+                                Spacing="0"
+                                HorizontalAlignment="Stretch">
+
+                        <StackPanel Margin="4,4,4,10">
+                            <TextBlock Text="Context Map / প্রসঙ্গ মানচিত্র"
+                                       Foreground="{StaticResource TextBrush}"
+                                       FontSize="20"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock Text="Editable research segmentation. The Qur'an corpus itself is never changed."
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       FontSize="13"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                            <Grid Margin="0,10,0,0"
+                                  ColumnSpacing="6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Content="Copy AI prompt"
+                                        HorizontalAlignment="Stretch"
+                                        Click="CopyContextProposalPrompt_Click"/>
+                                <Button Grid.Column="1"
+                                        Content="Import proposal…"
+                                        HorizontalAlignment="Stretch"
+                                        Click="ImportContextProposal_Click"/>
+                            </Grid>
+                            <Button x:Name="DiscardContextProposalButton"
+                                    Content="Discard unworked proposal…"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="0,6,0,0"
+                                    Visibility="Collapsed"
+                                    Click="DiscardContextProposal_Click"/>
+                        </StackPanel>
+
+                        <controls:OuterScrollListView x:Name="ContextList"
+                                  Background="Transparent"
+                                  SelectionChanged="ContextList_SelectionChanged"
+                                  HorizontalContentAlignment="Stretch"
+                                  ScrollViewer.VerticalScrollMode="Disabled"
+                                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                  ScrollViewer.HorizontalScrollMode="Disabled"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                                  Margin="0,0,0,8"/>
+
+                        <StackPanel Margin="2,6,2,0"
+                                    Spacing="6">
+                            <TextBlock Text="Context summary"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock x:Name="ContextSelectedText"
+                                       Text="Select a context block."
+                                       Foreground="{StaticResource TextBrush}"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"/>
+                            <controls:OuterScrollComboBox x:Name="ContextStatusSelector"
+                                      Margin="0,3,0,0"
+                                      SelectionChanged="ContextStatusSelector_SelectionChanged">
+                                <ComboBoxItem Content="Proposed" Tag="Proposed"/>
+                                <ComboBoxItem Content="Owner Reviewed" Tag="Owner Reviewed"/>
+                                <ComboBoxItem Content="Accepted / Locked" Tag="Accepted"/>
+                            </controls:OuterScrollComboBox>
+                            <Button x:Name="ContextCreateWorkingSliceButton"
+                                    Content="Create Working Slice…"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="0,3,0,0"
+                                    Click="CreateWorkingSliceFromContext_Click"/>
+                        </StackPanel>
+
+                        <Expander Header="Boundary tools"
+                                  IsExpanded="False"
+                                  Margin="2,10,2,0">
+                            <StackPanel Spacing="7"
+                                        Margin="0,6,0,0">
+                                <Grid ColumnSpacing="6"
+                                      RowSpacing="6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Button x:Name="ContextExtendStartButton"
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Content="Extend start ↑"
+                                            Click="ContextExtendStart_Click"
+                                            HorizontalAlignment="Stretch"/>
+                                    <Button x:Name="ContextShrinkStartButton"
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Content="Shrink start ↓"
+                                            Click="ContextShrinkStart_Click"
+                                            HorizontalAlignment="Stretch"/>
+
+                                    <Button x:Name="ContextShrinkEndButton"
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Content="Shrink end ↑"
+                                            Click="ContextShrinkEnd_Click"
+                                            HorizontalAlignment="Stretch"/>
+                                    <Button x:Name="ContextExtendEndButton"
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Content="Extend end ↓"
+                                            Click="ContextExtendEnd_Click"
+                                            HorizontalAlignment="Stretch"/>
+
+                                    <Button x:Name="ContextMergePreviousButton"
+                                            Grid.Row="2"
+                                            Grid.Column="0"
+                                            Content="Merge previous"
+                                            Click="ContextMergePrevious_Click"
+                                            HorizontalAlignment="Stretch"/>
+                                    <Button x:Name="ContextMergeNextButton"
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Content="Merge next"
+                                            Click="ContextMergeNext_Click"
+                                            HorizontalAlignment="Stretch"/>
+                                </Grid>
+
+                                <Grid ColumnSpacing="6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <controls:OuterScrollTextBox x:Name="SplitAfterTextBox"
+                                         Header="Split after ayah"
+                                         PlaceholderText="e.g. 5"
+                                         InputScope="Number"
+                                         TextChanged="ContextSplitAfter_TextChanged"/>
+                                    <Button x:Name="ContextSplitButton"
+                                            Grid.Column="1"
+                                            Content="Split"
+                                            VerticalAlignment="Bottom"
+                                            Click="ContextSplit_Click"/>
+                                </Grid>
+
+                                <TextBlock x:Name="ContextBoundaryStateText"
+                                           Text="Select a Context Block to inspect available boundary actions."
+                                           Foreground="{StaticResource MutedTextBrush}"
+                                           FontSize="11.5"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Expander>
+
+                        <Expander Header="Activity &amp; notes"
+                                  IsExpanded="False"
+                                  Margin="2,8,2,0">
+                            <StackPanel Spacing="7"
+                                        Margin="0,6,0,0">
+                                <TextBlock Text="Context activity"
+                                           Foreground="{StaticResource TextBrush}"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"/>
+                                <ItemsControl x:Name="ContextHistoryPanel"
+                                              Margin="0,2,0,0"/>
+
+                                <Expander x:Name="AyahNoteExpander"
+                                          Header="Ayah Note / আয়াত নোট"
+                                          IsExpanded="False"
+                                          Margin="0,6,0,0">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock x:Name="AyahNoteTargetText"
+                                                   Text="Choose an ayah with its Note button."
+                                                   Foreground="{StaticResource MutedTextBrush}"
+                                                   FontSize="12"
+                                                   TextWrapping="Wrap"/>
+                                        <controls:OuterScrollTextBox x:Name="AyahNoteTextBox"
+                                                 AcceptsReturn="True"
+                                                 TextWrapping="Wrap"
+                                                 MinHeight="90"
+                                                 MaxHeight="220"
+                                                 PlaceholderText="Your personal note for this ayah…"/>
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="6">
+                                            <Button x:Name="SaveAyahNoteButton"
+                                                    Content="Save note"
+                                                    Click="SaveAyahNote_Click"/>
+                                            <Button x:Name="EditAyahNoteButton"
+                                                    Content="Edit"
+                                                    Click="EditAyahNote_Click"
+                                                    Visibility="Collapsed"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Saved revisions"
+                                                   Foreground="{StaticResource MutedTextBrush}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"/>
+                                        <ItemsControl x:Name="AyahNoteHistoryPanel"/>
+                                    </StackPanel>
+                                </Expander>
+
+                                <Expander x:Name="ContextNoteExpander"
+                                          Header="Context Note / প্রসঙ্গ নোট"
+                                          IsExpanded="False"
+                                          Margin="0,4,0,0">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock x:Name="ContextNoteTargetText"
+                                                   Text="Select a context block."
+                                                   Foreground="{StaticResource MutedTextBrush}"
+                                                   FontSize="12"
+                                                   TextWrapping="Wrap"/>
+                                        <controls:OuterScrollTextBox x:Name="ContextNoteTextBox"
+                                                 AcceptsReturn="True"
+                                                 TextWrapping="Wrap"
+                                                 MinHeight="90"
+                                                 MaxHeight="220"
+                                                 PlaceholderText="Your personal note for this context block…"/>
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="6">
+                                            <Button x:Name="SaveContextNoteButton"
+                                                    Content="Save note"
+                                                    Click="SaveContextNote_Click"/>
+                                            <Button x:Name="EditContextNoteButton"
+                                                    Content="Edit"
+                                                    Click="EditContextNote_Click"
+                                                    Visibility="Collapsed"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Saved revisions"
+                                                   Foreground="{StaticResource MutedTextBrush}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"/>
+                                        <ItemsControl x:Name="ContextNoteHistoryPanel"/>
+                                    </StackPanel>
+                                </Expander>
+                            </StackPanel>
+                        </Expander>
+
+                        <Expander Header="Evidence sources"
+                                  IsExpanded="False"
+                                  Margin="2,8,2,14">
+                            <StackPanel Margin="0,6,0,0">
+                                <TextBlock Text="Any imported translation, commentary, transliteration, or tafsir."
+                                           Foreground="{StaticResource MutedTextBrush}"
+                                           FontSize="13"
+                                           TextWrapping="Wrap"
+                                           Margin="0,0,0,4"/>
+                                <StackPanel x:Name="SourceListPanel"/>
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+
+        <Grid x:Name="WorkingSliceWorkspaceGrid"
+              Grid.Row="1"
+              Visibility="Collapsed"
+              Background="{StaticResource AppBackgroundBrush}"
+              Padding="28,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Content="← Back to research"
+                        Padding="14,7"
+                        Margin="0,0,18,0"
+                        VerticalAlignment="Center"
+                        Click="CloseWorkingSlices_Click"/>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="Working Slice / Reconciliation Workspace"
+                               Foreground="{StaticResource TextBrush}"
+                               FontSize="28"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="Persistent reconciliation projects. Multiple slices can stay open at different stages and be resumed later."
+                               Foreground="{StaticResource MutedTextBrush}"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               Margin="0,3,0,0"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="1"
+                  Margin="0,20,0,0"
+                  ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="285"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="460"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Background="{StaticResource PanelAltBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Saved Working Slices"
+                                       Foreground="{StaticResource TextBrush}"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"/>
+                            <Button Content="New from selected Context…"
+                                    HorizontalAlignment="Stretch"
+                                    Click="NewWorkingSlice_Click"/>
+                            <TextBox x:Name="WorkingSliceSearchTextBox"
+                                     PlaceholderText="Search Working Slices…"
+                                     TextChanged="WorkingSliceSearchTextBox_TextChanged"/>
+                            <ComboBox x:Name="WorkingSliceFilter"
+                                      HorizontalAlignment="Stretch"
+                                      SelectionChanged="WorkingSliceFilter_SelectionChanged"
+                                      SelectedIndex="0">
+                                <ComboBoxItem Content="All slices" Tag="All"/>
+                                <ComboBoxItem Content="Draft" Tag="Draft"/>
+                                <ComboBoxItem Content="In Review" Tag="In Review"/>
+                                <ComboBoxItem Content="Resolved" Tag="Resolved"/>
+                            </ComboBox>
+                            <ComboBox x:Name="WorkingSliceSortSelector"
+                                      Header="Sort"
+                                      HorizontalAlignment="Stretch"
+                                      SelectionChanged="WorkingSliceSort_SelectionChanged"
+                                      SelectedIndex="0">
+                                <ComboBoxItem Content="Research order" Tag="Research"/>
+                                <ComboBoxItem Content="Recently updated" Tag="Recent"/>
+                                <ComboBoxItem Content="Status" Tag="Status"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <TextBlock x:Name="WorkingSliceListEmptyText"
+                                   Grid.Row="1"
+                                   Text="No saved Working Slices yet."
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   FontStyle="Italic"
+                                   TextWrapping="Wrap"
+                                   Margin="0,12,0,8"
+                                   Visibility="Collapsed"/>
+
+                        <ListView x:Name="WorkingSliceList"
+                                  Grid.Row="2"
+                                  Margin="0,8,0,0"
+                                  Background="Transparent"
+                                  SelectionChanged="WorkingSliceList_SelectionChanged"
+                                  HorizontalContentAlignment="Stretch"
+                                  ScrollViewer.HorizontalScrollMode="Disabled"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                                  ScrollViewer.VerticalScrollMode="Enabled"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                    </Grid>
+                </Border>
+
+                <Border x:Name="WorkingSliceEvidenceBorder"
+                        Grid.Column="1"
+                        Background="{StaticResource PanelBrush}"
+                        SizeChanged="ClipRegionToBounds_SizeChanged"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                    <ScrollViewer x:Name="WorkingSliceEvidenceScrollViewer"
+                                  Background="{StaticResource PanelBrush}"
+                                  HorizontalContentAlignment="Stretch"
+                                  ViewChanged="WorkingSliceEvidenceScrollViewer_ViewChanged"
+                                  VerticalScrollMode="Enabled"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollMode="Disabled"
+                                  HorizontalScrollBarVisibility="Hidden">
+                        <StackPanel x:Name="WorkingSliceEvidencePanel"
+                                    Padding="14"
+                                    Width="{Binding ViewportWidth, ElementName=WorkingSliceEvidenceScrollViewer}"
+                                    HorizontalAlignment="Left"/>
+                    </ScrollViewer>
+                </Border>
+
+                <Border x:Name="WorkingSliceRecordBorder"
+                        Grid.Column="2"
+                        Background="{StaticResource PanelAltBrush}"
+                        SizeChanged="ClipRegionToBounds_SizeChanged"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                    <ScrollViewer x:Name="WorkingSliceRecordScrollViewer"
+                                  Background="{StaticResource PanelAltBrush}"
+                                  HorizontalContentAlignment="Stretch"
+                                  VerticalScrollMode="Enabled"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollMode="Disabled"
+                                  HorizontalScrollBarVisibility="Hidden">
+                        <StackPanel x:Name="WorkingSliceRecordPanel"
+                                    Padding="14"
+                                    Width="{Binding ViewportWidth, ElementName=WorkingSliceRecordScrollViewer}"
+                                    Spacing="10"
+                                    HorizontalAlignment="Left">
+                            <TextBlock Text="Working Slice record"
+                                       Foreground="{StaticResource TextBrush}"
+                                       FontSize="19"
+                                       FontWeight="SemiBold"/>
+
+                            <TextBlock x:Name="WorkingSliceMetaText"
+                                       Text="Select or create a Working Slice."
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       FontSize="12.5"
+                                       TextWrapping="Wrap"/>
+
+                            <TextBlock x:Name="WorkingSliceDirtyText"
+                                       Text="● Unsaved changes"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       FontSize="12.5"
+                                       FontWeight="SemiBold"
+                                       Visibility="Collapsed"/>
+
+                            <TextBox x:Name="WorkingSliceTitleTextBox"
+                                     Header="Title"
+                                     TextChanged="WorkingSliceTextBox_TextChanged"/>
+
+                            <ComboBox x:Name="WorkingSliceStatusSelector"
+                                      Header="Status"
+                                      SelectionChanged="WorkingSliceStatusSelector_SelectionChanged">
+                                <ComboBoxItem Content="Draft" Tag="Draft"/>
+                                <ComboBoxItem Content="In Review" Tag="In Review"/>
+                                <ComboBoxItem Content="Resolved" Tag="Resolved"/>
+                            </ComboBox>
+
+                            <TextBox x:Name="WorkingSliceResearchTextBox"
+                                     Header="Research / reconciliation notes"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     MinHeight="170"
+                                     MaxHeight="360"
+                                     PlaceholderText="Record comparisons, linguistic/context observations, source tensions, hypotheses, and reasoning…"
+                                     TextChanged="WorkingSliceTextBox_TextChanged"/>
+
+                            <TextBox x:Name="WorkingSliceConclusionTextBox"
+                                     Header="Current conclusion"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     MinHeight="130"
+                                     MaxHeight="300"
+                                     PlaceholderText="Record the current owner conclusion or leave blank while unresolved…"
+                                     TextChanged="WorkingSliceTextBox_TextChanged"/>
+
+                            <StackPanel Spacing="7">
+                                <Button x:Name="WorkingSliceSaveButton"
+                                        Content="Save Working Slice"
+                                        Style="{StaticResource AccentButtonStyle}"
+                                        HorizontalAlignment="Stretch"
+                                        IsEnabled="False"
+                                        Click="SaveWorkingSlice_Click"/>
+                                <Button x:Name="WorkingSliceDiscardButton"
+                                        Content="Discard unsaved changes"
+                                        HorizontalAlignment="Stretch"
+                                        IsEnabled="False"
+                                        Click="DiscardWorkingSliceChanges_Click"/>
+                                <Button x:Name="WorkingSliceOpenParentButton"
+                                        Content="Open parent Context"
+                                        HorizontalAlignment="Stretch"
+                                        IsEnabled="False"
+                                        Click="WorkingSliceOpenParent_Click"/>
+                                <Button x:Name="WorkingSliceRemoveButton"
+                                        Content="Remove Working Slice…"
+                                        HorizontalAlignment="Stretch"
+                                        Margin="0,8,0,0"
+                                        IsEnabled="False"
+                                        Click="RemoveWorkingSlice_Click"/>
+                            </StackPanel>
+
+                            <Expander Header="Linked Ayah / Context notes"
+                                      IsExpanded="False"
+                                      Margin="0,8,0,0">
+                                <StackPanel x:Name="WorkingSliceLinkedNotesPanel"
+                                            Spacing="5"
+                                            Margin="0,6,0,0"/>
+                            </Expander>
+
+                            <Expander Header="Working Slice revisions"
+                                      IsExpanded="False"
+                                      Margin="0,2,0,0">
+                                <ItemsControl x:Name="WorkingSliceRevisionPanel"
+                                              Margin="0,6,0,0"/>
+                            </Expander>
+
+                            <TextBlock Text="Corpus evidence remains immutable. This panel saves only your Working Slice research state and revisions."
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       FontSize="11.5"
+                                       TextWrapping="Wrap"
+                                       Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Grid>
+
+
+        <Grid x:Name="HistoryWorkspaceGrid"
+              Grid.Row="1"
+              Visibility="Collapsed"
+              Background="{StaticResource AppBackgroundBrush}"
+              Padding="28,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Content="← Back to research"
+                        Padding="14,7"
+                        Margin="0,0,18,0"
+                        VerticalAlignment="Center"
+                        Click="CloseHistory_Click"/>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="Research History &amp; Navigation / গবেষণা ইতিহাস"
+                               Foreground="{StaticResource TextBrush}"
+                               FontSize="28"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="Audit trail, Ayah and Context notes, boundary decisions, Working Slices, bookmarks, and direct navigation."
+                               Foreground="{StaticResource MutedTextBrush}"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               Margin="0,3,0,0"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="1"
+                  Margin="0,20,0,0"
+                  ColumnSpacing="18">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="235"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Background="{StaticResource PanelAltBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="View"
+                                   Foreground="{StaticResource TextBrush}"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,4"/>
+
+                        <ComboBox x:Name="HistoryModeSelector"
+                                  HorizontalAlignment="Stretch"
+                                  SelectedIndex="0"
+                                  SelectionChanged="HistoryModeSelector_SelectionChanged">
+                            <ComboBoxItem Content="Organized" Tag="Organized"/>
+                            <ComboBoxItem Content="Timeline" Tag="Timeline"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Filter"
+                                   Foreground="{StaticResource TextBrush}"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Margin="0,10,0,0"/>
+
+                        <RadioButton Content="All activity"
+                                     GroupName="HistoryFilter"
+                                     Tag="All"
+                                     IsChecked="True"
+                                     Checked="HistoryFilter_Checked"/>
+                        <RadioButton Content="Ayah notes"
+                                     GroupName="HistoryFilter"
+                                     Tag="AyahNotes"
+                                     Checked="HistoryFilter_Checked"/>
+                        <RadioButton Content="Context notes"
+                                     GroupName="HistoryFilter"
+                                     Tag="ContextNotes"
+                                     Checked="HistoryFilter_Checked"/>
+                        <RadioButton Content="Context activity"
+                                     GroupName="HistoryFilter"
+                                     Tag="Context"
+                                     Checked="HistoryFilter_Checked"/>
+                        <RadioButton Content="Working Slices"
+                                     GroupName="HistoryFilter"
+                                     Tag="WorkingSlices"
+                                     Checked="HistoryFilter_Checked"/>
+                        <RadioButton Content="Bookmarks"
+                                     GroupName="HistoryFilter"
+                                     Tag="Bookmarks"
+                                     Checked="HistoryFilter_Checked"/>
+
+                        <TextBlock Text="Surah"
+                                   Foreground="{StaticResource TextBrush}"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Margin="0,14,0,0"/>
+
+                        <ComboBox x:Name="HistorySurahFilter"
+                                  HorizontalAlignment="Stretch"
+                                  SelectionChanged="HistorySurahFilter_SelectionChanged">
+                            <ComboBoxItem Content="All Surahs" Tag="0"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Ayah notes, bookmarks, Context records, and Working Slices use Surah grouping with their ayah ranges."
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   Margin="0,12,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid ColumnSpacing="12"
+                          Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox x:Name="HistoryWorkspaceSearchTextBox"
+                                 PlaceholderText="Search target, type, date/time, English or বাংলা note/bookmark text…"
+                                 TextChanged="HistoryWorkspaceSearchTextBox_TextChanged"/>
+
+                        <TextBlock x:Name="HistoryWorkspaceSummaryText"
+                                   Grid.Column="1"
+                                   Text="All activity"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   FontSize="13"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <ListView x:Name="HistoryResultsList"
+                              Grid.Row="1"
+                              Background="Transparent"
+                              SelectionMode="None"
+                              HorizontalContentAlignment="Stretch"
+                              ScrollViewer.VerticalScrollMode="Enabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              ScrollViewer.HorizontalScrollMode="Disabled"
+                              ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsStackPanel/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding GroupHeader}"
+                                               Height="{Binding GroupHeaderHeight}"
+                                               Foreground="{StaticResource TextBrush}"
+                                               FontSize="19"
+                                               FontWeight="SemiBold"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SubgroupHeader}"
+                                               Height="{Binding SubgroupHeaderHeight}"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"/>
+                                    <Border Background="{StaticResource CardBrush}"
+                                            BorderBrush="{StaticResource BorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="7"
+                                            Padding="14,11"
+                                            Margin="0,0,0,9">
+                                        <Grid RowSpacing="5">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Text="{Binding Header}"
+                                                       Foreground="{StaticResource AccentBrush}"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       TextWrapping="Wrap"/>
+
+                                            <TextBlock Grid.Row="1"
+                                                       Text="{Binding Timestamp}"
+                                                       Foreground="{StaticResource MutedTextBrush}"
+                                                       FontSize="11.5"/>
+
+                                            <TextBlock Grid.Row="2"
+                                                       Text="{Binding Preview}"
+                                                       Foreground="{StaticResource TextBrush}"
+                                                       FontSize="13.5"
+                                                       LineHeight="20"
+                                                       MaxLines="3"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       TextWrapping="Wrap"/>
+
+                                            <Expander Grid.Row="3"
+                                                      Header="{Binding DetailsHeader}"
+                                                      IsExpanded="False"
+                                                      Margin="0,2,0,0">
+                                                <StackPanel Spacing="7"
+                                                            Margin="0,6,0,2">
+                                                    <TextBlock Text="{Binding Body}"
+                                                               Foreground="{StaticResource TextBrush}"
+                                                               FontSize="13"
+                                                               LineHeight="20"
+                                                               TextWrapping="Wrap"
+                                                               IsTextSelectionEnabled="True"/>
+                                                    <ItemsControl ItemsSource="{Binding Revisions}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Background="{StaticResource PanelAltBrush}"
+                                                                        BorderBrush="{StaticResource BorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="5"
+                                                                        Padding="9"
+                                                                        Margin="0,3,0,0">
+                                                                    <StackPanel Spacing="4">
+                                                                        <TextBlock Text="{Binding Header}"
+                                                                                   Foreground="{StaticResource AccentBrush}"
+                                                                                   FontSize="12.5"
+                                                                                   FontWeight="SemiBold"
+                                                                                   TextWrapping="Wrap"/>
+                                                                        <TextBlock Text="{Binding Body}"
+                                                                                   Foreground="{StaticResource MutedTextBrush}"
+                                                                                   FontSize="12.5"
+                                                                                   TextWrapping="Wrap"
+                                                                                   IsTextSelectionEnabled="True"/>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Expander>
+
+                                            <Button Grid.Row="4"
+                                                    Content="{Binding JumpLabel}"
+                                                    Tag="{Binding}"
+                                                    IsEnabled="{Binding CanJump}"
+                                                    HorizontalAlignment="Left"
+                                                    Padding="12,5"
+                                                    Margin="0,4,0,0"
+                                                    Click="HistoryJumpToTarget_Click"/>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <Button x:Name="HistoryLoadMoreButton"
+                            Grid.Row="2"
+                            Content="Load more"
+                            HorizontalAlignment="Center"
+                            Padding="16,7"
+                            Margin="0,10,0,0"
+                            Visibility="Collapsed"
+                            Click="LoadMoreHistory_Click"/>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <Grid x:Name="ContextAtlasWorkspaceGrid"
+              Grid.Row="1"
+              Visibility="Collapsed"
+              Background="{StaticResource AppBackgroundBrush}"
+              Padding="28,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Content="← Back to research"
+                        Padding="14,7"
+                        VerticalAlignment="Center"
+                        Click="CloseContextAtlas_Click"/>
+
+                <StackPanel Grid.Column="1"
+                            Margin="4,0,0,0">
+                    <TextBlock Text="Context Atlas"
+                               Foreground="{StaticResource TextBrush}"
+                               FontSize="28"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="Read-only Proposal Corpus browser, comparison surface, and AI handoff generator."
+                               Foreground="{StaticResource MutedTextBrush}"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               Margin="0,3,0,0"/>
+                </StackPanel>
+
+                <Button Grid.Column="2"
+                        Content="Import Proposal Corpus…"
+                        Padding="12,6"
+                        Click="ImportAtlasCorpus_Click"/>
+
+                <Button x:Name="AtlasRemoveCorpusButton"
+                        Grid.Column="3"
+                        Content="Remove imported"
+                        Padding="12,6"
+                        IsEnabled="False"
+                        Click="RemoveAtlasCorpus_Click"/>
+
+                <Button Grid.Column="4"
+                        Content="Export Handoff ▾"
+                        Padding="12,6">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem Text="New Proposal Handoff"
+                                            Click="ExportNewAtlasHandoff_Click"/>
+                            <MenuFlyoutItem Text="Improve Existing Proposal Corpus…"
+                                            Click="ExportImproveAtlasHandoff_Click"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+
+            <Border Grid.Row="1"
+                    Background="{StaticResource PanelAltBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="7"
+                    Padding="14"
+                    Margin="0,16,0,0">
+                <Grid ColumnSpacing="14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="360"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox x:Name="AtlasCorpusSelector"
+                              Header="Proposal Corpus"
+                              HorizontalAlignment="Stretch"
+                              SelectionChanged="AtlasCorpusSelector_SelectionChanged"/>
+
+                    <TextBlock x:Name="AtlasCorpusMetadataText"
+                               Grid.Column="1"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center"
+                               IsTextSelectionEnabled="True"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2"
+                  Margin="0,16,0,0"
+                  ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="270"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="330"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Background="{StaticResource PanelAltBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBox x:Name="AtlasSearchTextBox"
+                                 PlaceholderText="Search Atlas…"
+                                 TextChanged="AtlasSearchTextBox_TextChanged"/>
+
+                        <ListView x:Name="AtlasSurahList"
+                                  Grid.Row="1"
+                                  Margin="0,12,0,0"
+                                  Background="Transparent"
+                                  SelectionMode="Single"
+                                  SelectionChanged="AtlasSurahList_SelectionChanged"
+                                  SizeChanged="AtlasSurahList_SizeChanged"
+                                  HorizontalContentAlignment="Stretch"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="6"
+                                Margin="0,0,0,10">
+                        <Button x:Name="AtlasBrowseTabButton"
+                                Content="Browse"
+                                Tag="Browse"
+                                Padding="12,5"
+                                Click="AtlasTabButton_Click"/>
+                        <Button x:Name="AtlasWorksetsTabButton"
+                                Content="Related Worksets"
+                                Tag="Related Worksets"
+                                Padding="12,5"
+                                Click="AtlasTabButton_Click"/>
+                        <Button x:Name="AtlasReviewTabButton"
+                                Content="Review"
+                                Tag="Review"
+                                Padding="12,5"
+                                Click="AtlasTabButton_Click"/>
+                        <Button x:Name="AtlasPinsTabButton"
+                                Content="Pins"
+                                Tag="Pins"
+                                Padding="12,5"
+                                Click="AtlasTabButton_Click"/>
+                        <Button x:Name="AtlasCompareTabButton"
+                                Content="Compare"
+                                Tag="Compare"
+                                Padding="12,5"
+                                Click="AtlasTabButton_Click"/>
+                        <Button x:Name="AtlasProvenanceTabButton"
+                                Content="Provenance"
+                                Tag="Provenance"
+                                Padding="12,5"
+                                Click="AtlasTabButton_Click"/>
+                    </StackPanel>
+
+                    <Grid x:Name="AtlasCompareControls"
+                          Grid.Row="1"
+                          Visibility="Collapsed"
+                          ColumnSpacing="10"
+                          Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="AtlasCompareASelector"
+                                  Header="Corpus A"
+                                  SelectionChanged="AtlasCompareSelector_SelectionChanged"/>
+                        <ComboBox x:Name="AtlasCompareBSelector"
+                                  Grid.Column="1"
+                                  Header="Corpus B"
+                                  SelectionChanged="AtlasCompareSelector_SelectionChanged"/>
+                    </Grid>
+
+                    <Grid Grid.Row="2">
+                        <ScrollViewer x:Name="AtlasContentScrollViewer"
+                                      SizeChanged="AtlasContentScrollViewer_SizeChanged"
+                                      ViewChanged="AtlasContentScrollViewer_ViewChanged"
+                                      VerticalScrollMode="Enabled"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollMode="Disabled"
+                                      HorizontalScrollBarVisibility="Hidden">
+                            <StackPanel x:Name="AtlasContentPanel"
+                                        Padding="0,0,8,20"/>
+                        </ScrollViewer>
+
+                        <!-- Build 1.6: true, dual independent read-only Ayah readers. -->
+                        <Grid x:Name="AtlasCompareReadingGrid"
+                              Visibility="Collapsed"
+                              SizeChanged="AtlasCompareReadingGrid_SizeChanged">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid ColumnSpacing="10" Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Content="← Back to Compare"
+                                        Padding="10,6"
+                                        Click="AtlasCompareReadingClose_Click"/>
+                                <TextBlock x:Name="AtlasCompareReadingHeadline"
+                                           Grid.Column="1"
+                                           Margin="10,0,0,0"
+                                           Foreground="{StaticResource TextBrush}"
+                                           FontWeight="SemiBold"
+                                           TextTrimming="None"
+                                           TextWrapping="Wrap"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <Grid Grid.Row="1" ColumnSpacing="12" Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox x:Name="AtlasCompareReadingEnglishSelector"
+                                          Header="English translation · both sides"
+                                          HorizontalAlignment="Stretch"
+                                          SelectionChanged="AtlasCompareReadingSource_SelectionChanged"/>
+                                <ComboBox x:Name="AtlasCompareReadingBengaliSelector"
+                                          Grid.Column="1"
+                                          Header="Bengali translation · both sides"
+                                          HorizontalAlignment="Stretch"
+                                          SelectionChanged="AtlasCompareReadingSource_SelectionChanged"/>
+                            </Grid>
+
+                            <Grid x:Name="AtlasCompareReadingColumns"
+                                  Grid.Row="2"
+                                  ColumnSpacing="12"
+                                  RowSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="0"/>
+                                </Grid.RowDefinitions>
+
+                                <Border x:Name="AtlasCompareReadingLeftBorder"
+                                        Grid.Column="0"
+                                        Grid.Row="0"
+                                        Background="{StaticResource PanelAltBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="8">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock x:Name="AtlasCompareReadingLeftTitle"
+                                                   Foreground="{StaticResource AccentBrush}"
+                                                   TextWrapping="Wrap"
+                                                   TextTrimming="None"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,10"/>
+                                        <ScrollViewer x:Name="AtlasCompareReadingLeftScroll"
+                                                      Grid.Row="1"
+                                                      HorizontalScrollMode="Disabled"
+                                                      HorizontalScrollBarVisibility="Hidden"
+                                                      VerticalScrollMode="Enabled"
+                                                      VerticalScrollBarVisibility="Auto"
+                                                      SizeChanged="AtlasCompareReadingScroll_SizeChanged"
+                                                      ViewChanged="AtlasCompareReadingLeftScroll_ViewChanged">
+                                            <StackPanel x:Name="AtlasCompareReadingLeftPanel"
+                                                        Spacing="8"
+                                                        Padding="0,0,6,16"/>
+                                        </ScrollViewer>
+                                    </Grid>
+                                </Border>
+
+                                <Border x:Name="AtlasCompareReadingRightBorder"
+                                        Grid.Column="1"
+                                        Grid.Row="0"
+                                        Background="{StaticResource PanelAltBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="8">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock x:Name="AtlasCompareReadingRightTitle"
+                                                   Foreground="{StaticResource AccentBrush}"
+                                                   TextWrapping="Wrap"
+                                                   TextTrimming="None"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,10"/>
+                                        <ScrollViewer x:Name="AtlasCompareReadingRightScroll"
+                                                      Grid.Row="1"
+                                                      HorizontalScrollMode="Disabled"
+                                                      HorizontalScrollBarVisibility="Hidden"
+                                                      VerticalScrollMode="Enabled"
+                                                      VerticalScrollBarVisibility="Auto"
+                                                      SizeChanged="AtlasCompareReadingScroll_SizeChanged"
+                                                      ViewChanged="AtlasCompareReadingRightScroll_ViewChanged">
+                                            <StackPanel x:Name="AtlasCompareReadingRightPanel"
+                                                        Spacing="8"
+                                                        Padding="0,0,6,16"/>
+                                        </ScrollViewer>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Transient reading only. Never creates Working Slices or writes research state. -->
+                        <Grid x:Name="AtlasReadingPreviewGrid"
+                              Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Button x:Name="AtlasReadingPreviousButton"
+                                        Content="← Previous Context"
+                                        Click="AtlasReadingPrevious_Click"
+                                        Padding="10,6"/>
+                                <Button x:Name="AtlasReadingNextButton"
+                                        Grid.Column="1"
+                                        Content="Next Context →"
+                                        Click="AtlasReadingNext_Click"
+                                        Padding="10,6"/>
+                                <TextBlock x:Name="AtlasReadingRangeLabel"
+                                           Grid.Column="2"
+                                           TextWrapping="Wrap"
+                                           TextTrimming="None"
+                                           Foreground="{StaticResource TextBrush}"
+                                           VerticalAlignment="Center"
+                                           FontWeight="SemiBold"
+                                           Margin="10,0,0,0"/>
+                                <Button Grid.Column="3"
+                                        Content="Close Preview"
+                                        Click="AtlasReadingClose_Click"
+                                        Padding="10,6"/>
+                            </Grid>
+                            <Grid Grid.Row="1"
+                                  ColumnSpacing="12"
+                                  Margin="0,10,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox x:Name="AtlasReadingEnglishSelector"
+                                          Header="English translation"
+                                          HorizontalAlignment="Stretch"
+                                          SelectionChanged="AtlasReadingTranslation_SelectionChanged"/>
+                                <ComboBox x:Name="AtlasReadingBengaliSelector"
+                                          Header="Bengali translation"
+                                          Grid.Column="1"
+                                          HorizontalAlignment="Stretch"
+                                          SelectionChanged="AtlasReadingTranslation_SelectionChanged"/>
+                            </Grid>
+                            <CheckBox x:Name="AtlasReadingSurroundingToggle"
+                                      Grid.Row="2"
+                                      Content="Show up to 3 Ayat before and after (outside selected Context)"
+                                      Margin="0,0,0,9"
+                                      Foreground="{StaticResource TextBrush}"
+                                      Checked="AtlasReadingSurrounding_Changed"
+                                      Unchecked="AtlasReadingSurrounding_Changed"/>
+                            <ScrollViewer x:Name="AtlasReadingScrollViewer"
+                                          SizeChanged="AtlasReadingScrollViewer_SizeChanged"
+                                          Grid.Row="3"
+                                          HorizontalScrollMode="Disabled"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollMode="Enabled"
+                                          VerticalScrollBarVisibility="Auto"
+                                          ViewChanged="AtlasReadingScrollViewer_ViewChanged">
+                                <StackPanel x:Name="AtlasReadingCardsPanel"
+                                            Spacing="10"
+                                            Padding="0,0,8,18"/>
+                            </ScrollViewer>
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+                <Border Grid.Column="2"
+                        Background="{StaticResource PanelAltBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Live owner research · read-only"
+                                   Foreground="{StaticResource TextBrush}"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"/>
+
+                        <TextBlock x:Name="AtlasSelectedPassageText"
+                                   Grid.Row="1"
+                                   Text="Select a proposed passage to inspect live owner research state."
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   FontSize="12.5"
+                                   TextWrapping="Wrap"
+                                   IsTextSelectionEnabled="True"
+                                   Margin="0,7,0,10"/>
+
+                        <ScrollViewer x:Name="AtlasLiveResearchScrollViewer"
+                                      Grid.Row="2"
+                                      VerticalScrollMode="Enabled"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollMode="Disabled"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      SizeChanged="AtlasLiveResearchScrollViewer_SizeChanged">
+                            <StackPanel x:Name="AtlasLiveResearchPanel"
+                                        HorizontalAlignment="Left"
+                                        Spacing="7"/>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+
+        <Border Grid.Row="2"
+                Background="{StaticResource PanelBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock x:Name="StatusText"
+                           Text="Loading verified local corpus…"
+                           Foreground="{StaticResource MutedTextBrush}"
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+
+                <Button x:Name="ResearchNavButton"
+                        Grid.Column="1"
+                        Content="Research"
+                        Padding="12,4"
+                        Margin="12,0,0,0"
+                        Click="ShowResearch_Click"/>
+
+                <Button x:Name="WorkingSlicesNavButton"
+                        Grid.Column="2"
+                        Content="Working Slices"
+                        Padding="12,4"
+                        Margin="6,0,0,0"
+                        Click="OpenWorkingSlices_Click"/>
+
+                <Button x:Name="HistoryNavButton"
+                        Grid.Column="3"
+                        Content="History"
+                        Padding="12,4"
+                        Margin="6,0,0,0"
+                        Click="OpenHistory_Click"/>
+
+                <Button x:Name="ContextAtlasNavButton"
+                        Grid.Column="4"
+                        Content="Context Atlas"
+                        Padding="12,4"
+                        Margin="6,0,0,0"
+                        Click="OpenContextAtlas_Click"/>
+
+                <Button Grid.Column="5"
+                        Content="Data safety"
+                        Padding="12,4"
+                        Margin="6,0,0,0">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem Text="Create verified backup"
+                                            Click="CreateVerifiedBackup_Click"/>
+                            <MenuFlyoutItem Text="Restore verified backup…"
+                                            Click="RestoreVerifiedBackup_Click"/>
+                            <MenuFlyoutSeparator/>
+                            <ToggleMenuFlyoutItem x:Name="ConfirmExitMenuItem"
+                                                  Text="Ask before closing app"
+                                                  Click="ConfirmExitMenuItem_Click"/>
+                            <MenuFlyoutSeparator/>
+                            <MenuFlyoutItem Text="Reset research data…"
+                                            Click="ResetResearchData_Click"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+
+                <Button Grid.Column="6"
+                        Content="Layout"
+                        Padding="12,4"
+                        Margin="6,0,0,0">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <ToggleMenuFlyoutItem x:Name="LeftSidebarMenuItem"
+                                                  Text="Show Surah sidebar"
+                                                  Click="LeftSidebarMenuItem_Click"/>
+                            <ToggleMenuFlyoutItem x:Name="RightSidebarMenuItem"
+                                                  Text="Show research sidebar"
+                                                  Click="RightSidebarMenuItem_Click"/>
+                            <MenuFlyoutSeparator/>
+                            <MenuFlyoutItem Text="Top bar · Full"
+                                            Click="TopBarFull_Click"/>
+                            <MenuFlyoutItem Text="Top bar · Compact"
+                                            Click="TopBarCompact_Click"/>
+                            <MenuFlyoutItem Text="Top bar · Hidden"
+                                            Click="TopBarHidden_Click"/>
+                            <MenuFlyoutSeparator/>
+                            <MenuFlyoutItem Text="Reset panel widths"
+                                            Click="ResetPanelWidths_Click"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+
+                <Button Grid.Column="7"
+                        Content="Help &amp; Guide"
+                        Padding="12,4"
+                        Margin="6,0,0,0"
+                        Click="OpenUserGuide_Click"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
