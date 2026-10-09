@@ -17,7 +17,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
     env:
-      PRIVATE_SOURCE_SHA: a34a4522e17878c63ad4accca3a2779cc97bb6db
+      PRIVATE_SOURCE_SHA: 74a800a1811ef945a620d16384f31ee21493b780
     steps:
       - name: Checkout temporary public CI mirror
         uses: actions/checkout@v4
