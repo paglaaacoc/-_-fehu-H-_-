@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 namespace QuranReconciliation.Models;
 
 internal sealed record HistoryRevisionItem(
@@ -81,7 +83,20 @@ internal sealed record HistoryDisplayRow(
     public bool CanJump => Entry.CanJump;
     public string JumpLabel => Entry.JumpLabel;
     public string DetailsHeader => Entry.DetailsHeader;
-    public IReadOnlyList<HistoryRevisionItem> Revisions => Entry.Revisions;
+    public ObservableCollection<HistoryRevisionItem> Revisions { get; } =
+        new(Entry.Revisions);
+
+    public bool RevisionsLoaded { get; private set; }
+
+    public void SetLazyRevisions(IReadOnlyList<HistoryRevisionItem> revisions)
+    {
+        if (RevisionsLoaded) return;
+        foreach (HistoryRevisionItem revision in revisions)
+        {
+            Revisions.Add(revision);
+        }
+        RevisionsLoaded = true;
+    }
     public double GroupHeaderHeight =>
         string.IsNullOrWhiteSpace(GroupHeader) ? 0 : 36;
     public double SubgroupHeaderHeight =>

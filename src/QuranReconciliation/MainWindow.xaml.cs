@@ -1210,7 +1210,8 @@ public sealed partial class MainWindow : Window
         // while the asynchronous native dialog asks the owner's permission.
         // Destructive owner-state handoffs have their existing guarded path.
         if (!_suppressSettingsSaveOnClose && _ready &&
-            _settings.ConfirmBeforeExit && !_exitAlreadyApproved)
+            (_settings.ConfirmBeforeExit || HasUnsavedResearchDrafts) &&
+            !_exitAlreadyApproved)
         {
             args.Cancel = true;
             if (!_exitConfirmationOpen)

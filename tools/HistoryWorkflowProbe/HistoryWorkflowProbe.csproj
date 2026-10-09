@@ -11,6 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/SqliteLiteralLike.cs"
+             Link="Shared/SqliteLiteralLike.cs" />
     <Compile Include="../../src/QuranReconciliation/Infrastructure/AppPaths.cs"
              Link="Shared/AppPaths.cs" />
     <Compile Include="../../src/QuranReconciliation/Infrastructure/ResearchDatabase.cs"

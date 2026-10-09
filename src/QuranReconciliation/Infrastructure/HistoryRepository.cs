@@ -442,10 +442,11 @@ internal sealed class HistoryRepository
 
         foreach (OrganizedSeed seed in seeds)
         {
+            // History rows load fast; expanded revision history is loaded
+            // only for the individual card the owner opens. Prevent N+1
+            // queries (and thousands of eager history strings) per refresh.
             IReadOnlyList<HistoryRevisionItem> revisions =
-                seed.RevisionCount > 0
-                    ? LoadRevisions(connection, seed, 20)
-                    : Array.Empty<HistoryRevisionItem>();
+                Array.Empty<HistoryRevisionItem>();
 
             result.Add(
                 new ResearchHistoryEntry(
@@ -467,6 +468,24 @@ internal sealed class HistoryRepository
         }
 
         return result;
+    }
+
+    internal IReadOnlyList<HistoryRevisionItem> LoadRevisionsOnDemand(
+        ResearchHistoryEntry entry,
+        int limit = 20)
+    {
+        if (entry.RevisionCount <= 0)
+        {
+            return Array.Empty<HistoryRevisionItem>();
+        }
+
+        var seed = new OrganizedSeed(
+            entry.Category, entry.Kind, entry.EntityType, entry.EntityId,
+            entry.Target, entry.Body, entry.ChangedUtc, entry.SurahNumber,
+            entry.AyahNumber, entry.ContextBlockId, entry.WorkingSliceId,
+            entry.StartAyah, entry.EndAyah, entry.RevisionCount);
+        using var connection = OpenReadOnly();
+        return LoadRevisions(connection, seed, limit);
     }
 
     private static IReadOnlyList<HistoryRevisionItem> LoadRevisions(

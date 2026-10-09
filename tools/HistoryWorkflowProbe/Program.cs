@@ -211,8 +211,8 @@ try
         organizedAyah[0].Kind ==
             "Ayah note" &&
         organizedAyah[0].RevisionCount == 1 &&
-        organizedAyah[0].Revisions.Count == 1 &&
-        organizedAyah[0].Revisions[0].Body.Contains(
+        organizedAyah[0].Revisions.Count == 0 &&
+        history.LoadRevisionsOnDemand(organizedAyah[0])[0].Body.Contains(
             "বাংলা",
             StringComparison.Ordinal),
         "Organized History must surface a parent object when only a nested revision matches.");
@@ -227,7 +227,8 @@ try
     Require(
         organizedSlice.Count == 1 &&
         organizedSlice[0].RevisionCount == 1 &&
-        organizedSlice[0].Revisions.Count == 1 &&
+        organizedSlice[0].Revisions.Count == 0 &&
+        history.LoadRevisionsOnDemand(organizedSlice[0]).Count == 1 &&
         organizedSlice[0].WorkingSliceId == 7,
         "Organized History must collapse current Working Slice plus revisions into one reopenable parent card.");
 

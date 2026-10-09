@@ -17,7 +17,7 @@ public sealed partial class MainWindow
         SaveCurrentSettings();
         StatusText.Text = _settings.ConfirmBeforeExit
             ? "Exit confirmation enabled. A normal close will ask first."
-            : "Exit confirmation disabled. A normal close will exit without an extra question.";
+            : "Routine exit confirmation disabled. Unsaved research still requires confirmation.";
     }
 
     private async Task ConfirmNormalExitAsync()

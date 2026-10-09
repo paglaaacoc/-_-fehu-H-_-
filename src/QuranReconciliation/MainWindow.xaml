@@ -953,6 +953,7 @@
 
                                             <Expander Grid.Row="3"
                                                       Header="{Binding DetailsHeader}"
+                                                      Expanded="HistoryRowExpander_Expanded"
                                                       IsExpanded="False"
                                                       Margin="0,2,0,0">
                                                 <StackPanel Spacing="7"

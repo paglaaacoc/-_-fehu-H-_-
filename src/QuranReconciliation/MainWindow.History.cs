@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using QuranReconciliation.Infrastructure;
 using QuranReconciliation.Models;
 
@@ -31,7 +32,7 @@ public sealed partial class MainWindow
         EnsureHistorySearchDebounce();
         // Keep paging/filter state across workspace navigation. History
         // still refreshes to show newly committed research from other tabs.
-        RefreshHistoryWorkspace();
+        RefreshHistoryWorkspace(preserveOffset: _historyWorkspaceInitialized);
         UpdateWorkspaceNavigationState();
 
         if (!_historyWorkspaceInitialized)
@@ -214,7 +215,7 @@ public sealed partial class MainWindow
                 ? 10000
                 : 2000);
 
-        RefreshHistoryWorkspace();
+        RefreshHistoryWorkspace(preserveOffset: true);
     }
 
     private void RefreshResearchHistory(bool force = false)
@@ -227,11 +228,11 @@ public sealed partial class MainWindow
         if (force ||
             HistoryWorkspaceGrid.Visibility == Visibility.Visible)
         {
-            RefreshHistoryWorkspace();
+            RefreshHistoryWorkspace(preserveOffset: true);
         }
     }
 
-    private void RefreshHistoryWorkspace()
+    private void RefreshHistoryWorkspace(bool preserveOffset = false)
     {
         if (HistoryResultsList is null ||
             HistoryWorkspaceSummaryText is null ||
@@ -239,6 +240,10 @@ public sealed partial class MainWindow
         {
             return;
         }
+
+        ScrollViewer? scroll =
+            preserveOffset ? FindHistoryScrollViewer(HistoryResultsList) : null;
+        double? originalOffset = scroll?.VerticalOffset;
 
         try
         {
@@ -333,6 +338,18 @@ public sealed partial class MainWindow
 
             HistoryResultsList.ItemsSource = rows;
 
+            if (originalOffset is double offset)
+            {
+                // Refresh to include new research while keeping the owner's
+                // logical viewing position on ordinary workspace re-entry.
+                HistoryResultsList.DispatcherQueue.TryEnqueue(() =>
+                {
+                    HistoryResultsList.UpdateLayout();
+                    FindHistoryScrollViewer(HistoryResultsList)?.ChangeView(
+                        null, offset, null, disableAnimation: true);
+                });
+            }
+
             string trimmed = query.Trim();
             string filterLabel =
                 _historyFilter switch
@@ -381,6 +398,44 @@ public sealed partial class MainWindow
 
             StatusText.Text =
                 $"History search unavailable: {ex.Message}";
+        }
+    }
+
+    private static ScrollViewer? FindHistoryScrollViewer(
+        DependencyObject root)
+    {
+        if (root is ScrollViewer scroll) return scroll;
+        int children = VisualTreeHelper.GetChildrenCount(root);
+        for (int i = 0; i < children; i++)
+        {
+            ScrollViewer? found =
+                FindHistoryScrollViewer(VisualTreeHelper.GetChild(root, i));
+            if (found is not null) return found;
+        }
+
+        return null;
+    }
+
+    private void HistoryRowExpander_Expanded(
+        object sender,
+        RoutedEventArgs e)
+    {
+        if (sender is not Expander expander ||
+            expander.DataContext is not HistoryDisplayRow row ||
+            row.RevisionsLoaded)
+        {
+            return;
+        }
+
+        try
+        {
+            row.SetLazyRevisions(
+                _history.LoadRevisionsOnDemand(row.Entry));
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text =
+                $"Could not load History revisions: {ex.Message}";
         }
     }
 
