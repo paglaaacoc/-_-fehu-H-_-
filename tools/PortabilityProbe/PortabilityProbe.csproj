@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/ResearchDatabase.cs"
+             Link="Shared/ResearchDatabase.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/ResearchActivityWriter.cs"
+             Link="Shared/ResearchActivityWriter.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/ContextProposalParser.cs"
+             Link="Shared/ContextProposalParser.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/ContextRepository.cs"
+             Link="Shared/ContextRepository.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/NoteRepository.cs"
+             Link="Shared/NoteRepository.cs" />
+    <Compile Include="../../src/QuranReconciliation/Infrastructure/AppPaths.cs"
+             Link="Shared/AppPaths.cs" />
+    <Compile Include="../../src/QuranReconciliation/Models/ContextModels.cs"
+             Link="Shared/ContextModels.cs" />
+    <Compile Include="../../src/QuranReconciliation/Models/NoteModels.cs"
+             Link="Shared/NoteModels.cs" />
+  </ItemGroup>
+</Project>
