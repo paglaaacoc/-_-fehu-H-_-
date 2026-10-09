@@ -3,7 +3,7 @@
   "build": "Build 1.9 R1 - UNACCEPTED / remediation CI",
   "source_repository": "paglaaacoc/Quran-Reconciliation-Workstation",
   "source_branch": "dev/build-1.9-research-integrity-closure",
-  "source_candidate_sha": "6f6a0a018050d267210379e4c390072af2dd0b68",
+  "source_candidate_sha": "357976e2df91b272bfc5568846b3af06a0d20724",
   "accepted_base_sha": "8a91a786f4df2d0c0b60d92cc781451e98fe6b0b",
   "source_files_mirrored": 163,
   "mirror_policy": "Only src/scripts/tools and required CI metadata, no private git history or owner research. Source files SHA matched before Windows CI.",
@@ -11,5 +11,6 @@
   "created_date": "2026-10-09",
   "mirror_checkout_policy": "Preserve source .gitattributes and exact LF for pinned Juz JSON.",
   "data_safety": "Do not upload real owner research or backup state.",
-  "last_verified_ci_tree": "99ba9a390cc8ed0d4e66a640fe19e7dfa9a09f2a"
+  "last_verified_ci_tree": "ee689ce9b8b1d69a5d8769a3bb2de65ac2fca9b5",
+  "last_ci_result": "Previous runs 37968004917 and 37968892122 failed at test-project link and unsupported XAML event respectively; both repaired in this source."
 }
