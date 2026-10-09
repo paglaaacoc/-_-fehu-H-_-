@@ -1,0 +1,118 @@
+name: Pathfinder Scratchpad S1 TEST - Windows installers
+
+on:
+  push:
+    branches:
+      - ci/pathfinder-scratchpad-s1-20261009
+    paths:
+      - ci-input/SCRATCHPAD-S1-BUILD-INPUT.zip
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pathfinder-scratchpad-s1-test-build
+  cancel-in-progress: false
+
+jobs:
+  installers:
+    name: S1 unaccepted test installers (x64 and ARM64)
+    runs-on: windows-2025
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Check out isolated build branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Verify exact approved input ZIP
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $file = Join-Path $env:GITHUB_WORKSPACE 'ci-input\SCRATCHPAD-S1-BUILD-INPUT.zip'
+          if (-not (Test-Path -LiteralPath $file)) { throw 'Missing S1 build input archive' }
+          $expected = '282da643d184d4bc3e23e0e65098a367d5461f567175401f6080e3faae6ebc6e'
+          $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+          Write-Host "Input SHA-256: $actual"
+          if ($actual -ne $expected) { throw 'Build archive SHA-256 does not match frozen Scratchpad S1 source.' }
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "Input ZIP integrity: **PASS** ($actual)"
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install Inno Setup (local Windows runner)
+        run: |
+          $ErrorActionPreference = 'Stop'
+          choco install innosetup -y --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup installation failed, exit code $LASTEXITCODE" }
+          $paths = @(
+            "$env:ProgramFiles\Inno Setup 7\ISCC.exe",
+            "${env:ProgramFiles(x86)}\Inno Setup 7\ISCC.exe",
+            "$env:ProgramFiles\Inno Setup 6\ISCC.exe",
+            "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          )
+          if (-not ($paths | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1)) {
+            throw 'Inno Setup compiler ISCC.exe missing after install'
+          }
+
+      - name: Unpack isolated candidate and check expected S1 assets
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Expand-Archive -LiteralPath 'ci-input\SCRATCHPAD-S1-BUILD-INPUT.zip' -DestinationPath 'stage' -Force
+          foreach ($p in @(
+            'stage\src\NivareQ.Step2Pathfinder\NivareQ.Step2Pathfinder.csproj',
+            'stage\src\NivareQ.Step2Pathfinder\ScratchpadAssets\index.html',
+            'stage\src\NivareQ.Step2Pathfinder\ScratchpadAssets\scratchpad.js',
+            'stage\tools\build-scratchpad-s1-locally.ps1',
+            'stage\installer\Pathfinder-x64.iss',
+            'stage\installer\Pathfinder-ARM64.iss'
+          )) { if (-not (Test-Path -LiteralPath $p)) { throw "Build input incomplete: $p" } }
+
+      - name: Build both Windows installers without release or deployment
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Push-Location 'stage'
+          try {
+            & '.\tools\build-scratchpad-s1-locally.ps1'
+            if ($LASTEXITCODE -ne 0) { throw "Scratchpad S1 build failed: $LASTEXITCODE" }
+          }
+          finally { Pop-Location }
+
+      - name: Verify installer outputs and record SHA-256
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dir = 'stage\artifacts\installers'
+          $files = @(Get-ChildItem -LiteralPath $dir -Filter '*Scratchpad-S1-TEST-Setup-*.exe' -File)
+          if ($files.Count -ne 2) { throw "Expected exactly 2 installers; got $($files.Count)" }
+          foreach ($f in $files) {
+            $hash = (Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash
+            Write-Host "$($f.Name) $hash"
+            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- $($f.Name): $hash"
+          }
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "Test candidate only; no Windows runtime or owner acceptance implied."
+
+      - name: Upload TEST installer artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: NivareQ-Pathfinder-v1.2.2-Scratchpad-S1-TEST-x64-ARM64
+          path: |
+            stage/artifacts/installers/*Scratchpad-S1-TEST-Setup-*.exe
+            stage/artifacts/installers/SCRATCHPAD-S1-TEST-INSTALLER-SHA256.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload bounded build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pathfinder-S1-TEST-build-diagnostics
+          path: |
+            stage/Build Logs/*.log
+            stage/artifacts/installers/SCRATCHPAD-S1-TEST-INSTALLER-SHA256.json
+          if-no-files-found: ignore
+          retention-days: 3
