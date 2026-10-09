@@ -236,6 +236,9 @@ public sealed partial class MainWindow
             return;
         }
 
+        if (!RequireSavedContextNotesBeforeStructuralEdit())
+            return;
+
         var content =
             new StackPanel
             {
@@ -331,6 +334,9 @@ public sealed partial class MainWindow
         object sender,
         RoutedEventArgs e)
     {
+        if (!RequireSavedContextNotesBeforeStructuralEdit())
+            return;
+
         int verseCount =
             _chapters[_currentSurah - 1].VersesCount;
 
@@ -950,6 +956,9 @@ public sealed partial class MainWindow
         Func<long, long> operation,
         string successMessage)
     {
+        if (!RequireSavedContextNotesBeforeStructuralEdit())
+            return;
+
         if (_selectedContextId is not long id)
         {
             StatusText.Text = "Select a context block first.";
@@ -974,4 +983,37 @@ public sealed partial class MainWindow
             LoadContextMapForCurrentSurah(id);
         }
     }
+    private bool RequireSavedContextNotesBeforeStructuralEdit()
+    {
+        // Context replacement, merge and proposal discard can archive a
+        // Context ID. Preserve the note's original research identity: don't
+        // allow a structural change to strand its uncommitted draft.
+        var pending = new HashSet<long>(_contextNoteDrafts.Keys);
+        if (_contextNoteDirty && _noteContextId is long currentId)
+            pending.Add(currentId);
+
+        foreach (long id in pending)
+        {
+            try
+            {
+                if (_contexts.GetHistoricalBlock(id).SurahNumber != _currentSurah)
+                    continue;
+            }
+            catch
+            {
+                // Unknown original authority must be resolved before editing
+                // Context structure; fail closed without discarding notes.
+            }
+
+            StatusText.Text =
+                "Context structure unchanged. Save the original Context-note " +
+                "draft(s) for this Surah before importing, discarding, " +
+                "splitting or merging Contexts. Their original IDs are preserved.";
+            return false;
+        }
+
+        return true;
+    }
+
+
 }
