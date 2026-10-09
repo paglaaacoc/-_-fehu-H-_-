@@ -87,6 +87,17 @@ jobs:
           if ($parseErrors.Count -gt 0) { throw ("Build script still has a PowerShell parse error: " + ($parseErrors | Out-String)) }
           Write-Host 'Staged build-only script parsed successfully. Frozen source ZIP and app source unmodified.'
 
+      - name: Fix one compiler-proven Scratchpad save-path definite assignment error (CI staged copy only)
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $source = (Resolve-Path 'stage\\src\\NivareQ.Step2Pathfinder\\MainWindow.Scratchpad.cs').Path
+          $raw = [IO.File]::ReadAllText($source)
+          $bad = 'if (serialized is null || !TryWriteScratchpad(serialized, out var error))'
+          if (-not $raw.Contains($bad)) { throw 'Frozen S1 C# input does not match the verified compiler error.' }
+          $fixed = $raw.Replace($bad, 'string error = "";' + "`r`n" + '            if (serialized is null || !TryWriteScratchpad(serialized, out error))')
+          [IO.File]::WriteAllText($source, $fixed, [Text.UTF8Encoding]::new($false))
+          Write-Host 'Patched one Scratchpad-only CS0165 error. Frozen input ZIP and all cockpit HTML remain unchanged.'
+
       - name: Build both Windows installers without release or deployment
         run: |
           $ErrorActionPreference = 'Stop'
