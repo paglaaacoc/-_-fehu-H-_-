@@ -14,6 +14,8 @@ public sealed partial class MainWindow
     private bool _loadingNoteUi;
     private bool _ayahNoteDirty;
     private bool _contextNoteDirty;
+    private string _ayahNoteSavedBody = string.Empty;
+    private string _contextNoteSavedBody = string.Empty;
     // Unsaved drafts follow original note targets, not current selection.
     // Separate from committed revisioned research; same-launch only.
     private readonly Dictionary<(int Surah, int Ayah), string> _ayahNoteDrafts = new();
@@ -64,7 +66,15 @@ public sealed partial class MainWindow
                 if (!_loadingNoteUi &&
                     !AyahNoteTextBox.IsReadOnly)
                 {
-                    _ayahNoteDirty = true;
+                    _ayahNoteDirty = !string.Equals(
+                        AyahNoteTextBox.Text ?? string.Empty,
+                        _ayahNoteSavedBody,
+                        StringComparison.Ordinal);
+                    if (!_ayahNoteDirty &&
+                        _noteSurah is int surah && _noteAyah is int ayah)
+                    {
+                        _ayahNoteDrafts.Remove((surah, ayah));
+                    }
                     ScheduleRecoverableDraftSave();
                 }
             };
@@ -75,7 +85,14 @@ public sealed partial class MainWindow
                 if (!_loadingNoteUi &&
                     !ContextNoteTextBox.IsReadOnly)
                 {
-                    _contextNoteDirty = true;
+                    _contextNoteDirty = !string.Equals(
+                        ContextNoteTextBox.Text ?? string.Empty,
+                        _contextNoteSavedBody,
+                        StringComparison.Ordinal);
+                    if (!_contextNoteDirty && _noteContextId is long id)
+                    {
+                        _contextNoteDrafts.Remove(id);
+                    }
                     ScheduleRecoverableDraftSave();
                 }
             };
@@ -140,6 +157,7 @@ public sealed partial class MainWindow
 
         ResearchNote? note =
             _notes.GetAyahNote(surahNumber, ayahNumber);
+        _ayahNoteSavedBody = note?.Body ?? string.Empty;
 
         AyahNoteTargetText.Text =
             $"Selected ayah / নির্বাচিত আয়াত · {surahNumber}:{ayahNumber}";
@@ -194,6 +212,7 @@ public sealed partial class MainWindow
         if (contextBlockId is not long id)
         {
             ContextNoteTargetText.Text = "Select a context block.";
+            _contextNoteSavedBody = string.Empty;
             _loadingNoteUi = true;
             try { ContextNoteTextBox.Text = string.Empty; }
             finally { _loadingNoteUi = false; }
@@ -210,6 +229,7 @@ public sealed partial class MainWindow
         {
             ContextBlock block = _contexts.GetBlock(id);
             ResearchNote? note = _notes.GetContextNote(id);
+            _contextNoteSavedBody = note?.Body ?? string.Empty;
 
             ContextNoteTargetText.Text =
                 $"{block.RangeLabel} · {block.Status}";
@@ -254,7 +274,11 @@ public sealed partial class MainWindow
         catch (Exception ex)
         {
             ContextNoteTargetText.Text = "Context note unavailable.";
-            ContextNoteTextBox.Text = string.Empty;
+            _contextNoteSavedBody = string.Empty;
+            _loadingNoteUi = true;
+            try { ContextNoteTextBox.Text = string.Empty; }
+            finally { _loadingNoteUi = false; }
+            _contextNoteDirty = false;
             ContextNoteHistoryPanel.Items.Clear();
             SetContextNoteEditorState(
                 editing: false,
@@ -347,6 +371,7 @@ public sealed partial class MainWindow
                 _notes.GetAyahHistory(surah, ayah));
 
             _ayahNoteDirty = false;
+            _ayahNoteSavedBody = body;
             _ayahNoteDrafts.Remove((surah, ayah));
 
             SetAyahNoteEditorState(
@@ -410,6 +435,7 @@ public sealed partial class MainWindow
                 _notes.GetContextHistory(id));
 
             _contextNoteDirty = false;
+            _contextNoteSavedBody = body;
             _contextNoteDrafts.Remove(id);
 
             SetContextNoteEditorState(
