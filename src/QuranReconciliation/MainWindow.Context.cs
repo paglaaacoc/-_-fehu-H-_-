@@ -489,6 +489,21 @@ public sealed partial class MainWindow
                 FontSize = 12
             });
 
+        int activeDependentSlices =
+            _workingSlices.CountActiveForSurah(_currentSurah);
+        if (activeDependentSlices > 0)
+        {
+            preview.Children.Add(
+                new TextBlock
+                {
+                    Text =
+                        $"Research provenance notice: this Surah has {activeDependentSlices} active Working Slice(s). Those originally linked to replaced Context blocks retain their historical parent IDs and saved research. They will NOT be silently reparented to this proposal. Opening an archived parent will offer an explicit current-Context navigation choice.",
+                    Foreground = Brush("TextBrush"),
+                    FontWeight = FontWeights.SemiBold,
+                    TextWrapping = TextWrapping.Wrap
+                });
+        }
+
         var confirm = new ContentDialog
         {
             XamlRoot = RootGrid.XamlRoot,

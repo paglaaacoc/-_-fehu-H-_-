@@ -949,6 +949,16 @@ internal sealed class OwnerDataBackupService
                 return false;
             }
 
+            // A committed reset records the exact newly installed research
+            // snapshot digest. Compare using the SQLite snapshot pathway,
+            // never a raw live WAL-file byte read. An unexpected digest must
+            // rebuild safely from the verified pre-operation authority.
+            if (string.IsNullOrWhiteSpace(journal.NewResearchSha256) ||
+                !LiveStateMatches(journal.NewResearchSha256, expectedSettings))
+            {
+                return false;
+            }
+
             using var connection =
                 new SqliteConnection(
                     new SqliteConnectionStringBuilder

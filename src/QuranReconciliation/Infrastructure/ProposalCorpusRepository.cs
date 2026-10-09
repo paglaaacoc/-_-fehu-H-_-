@@ -154,11 +154,31 @@ internal sealed class ProposalCorpusRepository
                             path,
                             _chapters,
                             isBuiltIn: false);
+                    ProposalCorpusPackage? existing =
+                        packages.FirstOrDefault(x =>
+                            string.Equals(x.Corpus.CorpusId,
+                                imported.Corpus.CorpusId,
+                                StringComparison.Ordinal));
+
+                    if (existing is not null)
+                    {
+                        bool identical = string.Equals(
+                            existing.PayloadSha256, imported.PayloadSha256,
+                            StringComparison.OrdinalIgnoreCase);
+                        _rejectedImportedPackages.Add(
+                            $"{Path.GetFileName(path)}: duplicate corpus ID {imported.Corpus.CorpusId}" +
+                            (identical
+                                ? " (same payload; skipped)"
+                                : " (conflicting payload; skipped)"));
+                        continue;
+                    }
+
                     packages.Add(imported);
                 }
                 catch (Exception ex) when (
                     ex is InvalidDataException or IOException or
-                          UnauthorizedAccessException)
+                          UnauthorizedAccessException or FormatException or
+                          System.Text.Json.JsonException)
                 {
                     // Imported material is isolated and never authoritative.
                     // Keep original ZIP untouched; preserve healthy corpora.

@@ -24,6 +24,19 @@ internal sealed class WorkingSliceRepository
             AppPaths.ResearchDatabase;
     }
 
+    internal int CountActiveForSurah(int surahNumber)
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+        SELECT COUNT(*)
+        FROM working_slices ws
+        WHERE ws.is_active=1 AND ws.surah_number=$surah;
+        """;
+        command.Parameters.AddWithValue("$surah", surahNumber);
+        return Convert.ToInt32(command.ExecuteScalar());
+    }
+
     internal IReadOnlyList<WorkingSlice> List(
         string status = "All",
         string? query = null,

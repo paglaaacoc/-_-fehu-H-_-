@@ -416,12 +416,11 @@ public sealed partial class MainWindow
         return null;
     }
 
-    private void HistoryRowExpander_Expanded(
-        object sender,
-        RoutedEventArgs e)
+    private void HistoryRowExpander_Expanding(
+        Expander expander,
+        ExpanderExpandingEventArgs args)
     {
-        if (sender is not Expander expander ||
-            expander.DataContext is not HistoryDisplayRow row ||
+        if (expander.DataContext is not HistoryDisplayRow row ||
             row.RevisionsLoaded)
         {
             return;

@@ -20,6 +20,7 @@ try
     TestInterruptedRecovery(root);
     TestCommittedRestoreRecovery(root);
     TestCommittedResetRecovery(root);
+    TestCommittedResetLedgerAnomalies(root);
     TestAmbiguousRecoveryFailsClosed(root);
     TestBackupShapeValidation(root);
 
@@ -710,6 +711,88 @@ static void TestCommittedResetRecovery(string root)
                 data,
                 "owner-state-operation.json")),
         "Committed reset journal was not cleared after verification.");
+}
+
+static void TestCommittedResetLedgerAnomalies(string root)
+{
+    foreach (string anomaly in new[]
+        { "research_activity_events", "context_operations" })
+    {
+        string appRoot = Path.Combine(root, "reset-ledger-" + anomaly);
+        string data = Path.Combine(appRoot, "Data");
+        Directory.CreateDirectory(data);
+        string db = Path.Combine(data, "research.sqlite");
+        string settings = Path.Combine(data, "settings.json");
+
+        ResearchDatabase.InitializeAt(db);
+        WriteAyahNote(db, "preserved-before-reset");
+        WriteSettings(settings, "OLED Cyan");
+        var service = new OwnerDataBackupService(
+            "Build 1.9 synthetic reset probe", appRoot, "probe-source");
+
+        VerifiedOwnerBackup pre =
+            service.CreateVerifiedBackup(OwnerDataBackupService.PreResetReason);
+        SqliteConnection.ClearAllPools();
+        DeleteIfExists(db);
+        DeleteIfExists(db + "-wal");
+        DeleteIfExists(db + "-shm");
+        ResearchDatabase.InitializeAt(db);
+
+        using (var connection = new SqliteConnection(
+            new SqliteConnectionStringBuilder { DataSource = db }.ToString()))
+        {
+            connection.Open();
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = anomaly == "research_activity_events"
+                ? """
+                  INSERT INTO research_activity_events(
+                      event_type,entity_type,surah_number,summary,occurred_utc)
+                  VALUES('Injected','ContextOperation',2,'synthetic anomaly','2026-10-09T00:00:00Z');
+                  """
+                : """
+                  INSERT INTO context_operations(
+                      surah_number,operation_type,summary,created_utc)
+                  VALUES(2,'Injected','synthetic anomaly','2026-10-09T00:00:00Z');
+                  """;
+            cmd.ExecuteNonQuery();
+        }
+
+        // Deliberately forge a matching installed-state SHA for the polluted
+        // research file. Digest-only checks cannot replace ledger validation.
+        VerifiedOwnerBackup tainted =
+            service.CreateVerifiedBackup(OwnerDataBackupService.ManualReason);
+        string id = Guid.NewGuid().ToString("N");
+        var journal = new OwnerStateOperationJournal(
+            id, "Reset", "Committed", "Build 1.9 synthetic reset probe",
+            "probe-source", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow,
+            pre.Path, pre.Manifest.BackupId,
+            pre.Manifest.ResearchSha256, pre.Manifest.SettingsSha256,
+            null, null, tainted.Manifest.ResearchSha256,
+            pre.Manifest.SettingsSha256,
+            Path.Combine(data, ".reset-quarantine-" + id));
+
+        File.WriteAllText(
+            Path.Combine(data, "owner-state-operation.json"),
+            JsonSerializer.Serialize(journal));
+
+        OwnerStateRecoveryResult recovered =
+            service.RecoverInterruptedOperation();
+
+        using (var connection = new SqliteConnection(
+            new SqliteConnectionStringBuilder { DataSource = db }.ToString()))
+        {
+            connection.Open();
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = "SELECT COUNT(*) FROM " + anomaly + ";";
+            Require(Convert.ToInt64(cmd.ExecuteScalar()) == 0,
+                "Committed-reset recovery accepted populated " + anomaly);
+        }
+
+        Require(recovered.Recovered && CountAyahNotes(db) == 0,
+            "Committed-reset ledger fault was not repaired safely.");
+        Require(!File.Exists(Path.Combine(data, "owner-state-operation.json")),
+            "Committed-reset ledger recovery did not finish journal cleanup.");
+    }
 }
 
 static void TestAmbiguousRecoveryFailsClosed(string root)
