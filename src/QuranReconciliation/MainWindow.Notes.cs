@@ -52,6 +52,8 @@ public sealed partial class MainWindow
         {
             _contextNoteDirty = false;
         }
+
+        TryPersistRecoverableDrafts();
     }
 
     private void AttachResearchDirtyTracking()
@@ -63,6 +65,7 @@ public sealed partial class MainWindow
                     !AyahNoteTextBox.IsReadOnly)
                 {
                     _ayahNoteDirty = true;
+                    ScheduleRecoverableDraftSave();
                 }
             };
 
@@ -73,6 +76,7 @@ public sealed partial class MainWindow
                     !ContextNoteTextBox.IsReadOnly)
                 {
                     _contextNoteDirty = true;
+                    ScheduleRecoverableDraftSave();
                 }
             };
     }
@@ -128,6 +132,7 @@ public sealed partial class MainWindow
         {
             _ayahNoteDrafts[(oldSurah, oldAyah)] =
                 AyahNoteTextBox.Text ?? string.Empty;
+            TryPersistRecoverableDrafts();
         }
 
         _noteSurah = surahNumber;
@@ -181,6 +186,7 @@ public sealed partial class MainWindow
         {
             _contextNoteDrafts[priorId] =
                 ContextNoteTextBox.Text ?? string.Empty;
+            TryPersistRecoverableDrafts();
         }
 
         _noteContextId = contextBlockId;
@@ -354,6 +360,8 @@ public sealed partial class MainWindow
                     ? $"Ayah note saved and locked for {surah}:{ayah}."
                     : $"Ayah note revision saved for {surah}:{ayah}; the previous version is in history."
                 : $"Ayah note for {surah}:{ayah} is unchanged and remains locked.";
+
+            TryPersistRecoverableDrafts();
         }
         catch (Exception ex)
         {
@@ -416,6 +424,8 @@ public sealed partial class MainWindow
                     ? "Context note saved and locked."
                     : "Context note revision saved; the previous version is in history."
                 : "Context note is unchanged and remains locked.";
+
+            TryPersistRecoverableDrafts();
         }
         catch (Exception ex)
         {

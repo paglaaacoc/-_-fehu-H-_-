@@ -35,7 +35,7 @@ public sealed partial class MainWindow
                 Content = new TextBlock
                 {
                     Text = HasUnsavedResearchDrafts
-                        ? "You have unsaved research notes or Working Slice edits. Closing will discard those unsaved edits. Choose Keep working to save them first."
+                        ? "You have uncommitted research drafts. They will be retained in the portable recovery file for the next launch, but NOT committed to research history or included in verified backups. Choose Keep working to save them into research first."
                         : "Exit the application? Your session-only Atlas comparison, Pins and workspace positions will end when the application closes.",
                     TextWrapping = TextWrapping.Wrap
                 },

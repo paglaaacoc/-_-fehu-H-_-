@@ -456,6 +456,7 @@ public sealed partial class MainWindow
         long? preferredId = null)
     {
         RememberWorkingSliceDraft();
+        if (_workingSliceDirty) TryPersistRecoverableDrafts();
         if (WorkingSliceList is null)
         {
             return;
@@ -687,6 +688,7 @@ public sealed partial class MainWindow
         }
 
         RememberWorkingSliceDraft();
+        TryPersistRecoverableDrafts();
         if (WorkingSliceList.SelectedItem
                 is ListViewItem item &&
             item.Tag is WorkingSlice slice)
@@ -887,6 +889,8 @@ public sealed partial class MainWindow
 
         WorkingSliceOpenParentButton.IsEnabled =
             hasSlice;
+
+        if (hasSlice) ScheduleRecoverableDraftSave();
     }
 
     private void WorkingSliceStatusSelector_SelectionChanged(
@@ -960,6 +964,8 @@ public sealed partial class MainWindow
                 changed
                     ? "Working Slice saved; the previous state is preserved in revision history."
                     : "Working Slice is unchanged.";
+
+            TryPersistRecoverableDrafts();
         }
         catch (Exception ex)
         {
@@ -991,6 +997,7 @@ public sealed partial class MainWindow
 
         StatusText.Text =
             "Unsaved Working Slice changes discarded; the last saved state was reloaded.";
+        TryPersistRecoverableDrafts();
     }
 
     private async void RemoveWorkingSlice_Click(
@@ -1085,6 +1092,8 @@ public sealed partial class MainWindow
                 hasUnsaved
                     ? $"Removed “{removed.Title}” from active Working Slices; unsaved changes were deliberately discarded and saved history was preserved."
                     : $"Removed “{removed.Title}” from active Working Slices; saved history was preserved.";
+
+            TryPersistRecoverableDrafts();
         }
         catch (Exception ex)
         {

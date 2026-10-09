@@ -108,6 +108,7 @@ public sealed partial class MainWindow : Window
 
         ResearchDatabase.Initialize();
         _settings = SettingsStore.Load();
+        LoadRecoverableDraftsAtStartup();
         ConfirmExitMenuItem.IsChecked = _settings.ConfirmBeforeExit;
 
         _corpus = new CorpusRepository();
@@ -165,6 +166,13 @@ public sealed partial class MainWindow : Window
         RefreshResearchHistory();
         UpdateWorkspaceNavigationState();
         SaveCurrentSettings();
+        if (HasUnsavedResearchDrafts)
+        {
+            StatusText.Text =
+                "Recoverable uncommitted research drafts found. Open the original " +
+                "Working Slice / Ayah / Context to review and explicitly Save; " +
+                "canonical research was not changed.";
+        }
     }
 
     private void TryApplyApplicationIcon()
@@ -1203,6 +1211,15 @@ public sealed partial class MainWindow : Window
             args.Cancel = true;
             StatusText.Text =
                 "Owner-state safety operation in progress. Close is temporarily disabled until verification or recovery handoff completes.";
+            return;
+        }
+
+        // A normal close must first checkpoint uncommitted research to the
+        // separate portable recovery file, even if routine confirmation is off.
+        if (HasUnsavedResearchDrafts && !TryPersistRecoverableDrafts())
+        {
+            args.Cancel = true;
+            _exitAlreadyApproved = false;
             return;
         }
 

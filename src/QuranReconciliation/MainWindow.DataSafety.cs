@@ -89,8 +89,16 @@ public sealed partial class MainWindow
         DiscardNoteDraftsForSafety();
         DiscardWorkingSliceDraftForSafety();
 
+        if (!TryPersistRecoverableDrafts())
+        {
+            // If the sidecar cannot be cleared, it could resurrect drafts
+            // from the pre-restore/reset authority on the next startup.
+            // Never proceed with the destructive operation in that state.
+            return false;
+        }
+
         StatusText.Text =
-            "Unsaved drafts deliberately excluded from the destructive owner-state operation.";
+            "Uncommitted drafts deliberately discarded; recovery sidecar cleared before the owner-state operation.";
 
         return true;
     }
