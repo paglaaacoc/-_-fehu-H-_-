@@ -1,8 +1,9 @@
 {
   "kind": "disposable_fast_winui_validation",
-  "private_source_sha": "a34a4522e17878c63ad4accca3a2779cc97bb6db",
+  "private_source_sha": "74a800a1811ef945a620d16384f31ee21493b780",
   "accepted_base_sha": "8a91a786f4df2d0c0b60d92cc781451e98fe6b0b",
-  "test_focus": "Recoverable draft store, WinUI compilation, inherited research and safety contracts",
+  "test_focus": "R5 structural Context-note guard, native compile, crash-draft recovery, research and safety probes",
   "owner_acceptance": "PENDING",
-  "research_data": "SYNTHETIC ONLY"
+  "research_data": "SYNTHETIC ONLY",
+  "preceding_fast_run": "37970980040 success"
 }
