@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Pathfinder R9 isolated WebView2 smoke</title></head>
+<body><main>STAGING-ONLY NOTES WEBVIEW2 SMOKE. No application startup, medical data, or live storage.</main>
+<script>
+'use strict';
+let lease = null;
+const post = value => window.chrome.webview.postMessage(value);
+window.smokeSend = (type, payload, requestId) => {
+  if (!lease) throw Error('No native Notes document lease');
+  post({channel: 'nivareq.notes.web.v1', type, documentToken: lease, requestId, payload});
+  return true;
+};
+window.chrome.webview.addEventListener('message', evt => {
+  const data = evt.data;
+  if (!data || data.channel !== 'nivareq.notes.web.v1') return;
+  if (data.type === 'notes-bootstrap') {
+    if (lease) return;
+    lease = data.documentToken;
+    post({type:'smoke-bootstrap-observed', documentToken:lease});
+  } else if (data.type === 'notes-response') {
+    post({type:'smoke-native-response-observed',requestId:data.requestId,response:data});
+  }
+});
+</script></body></html>
