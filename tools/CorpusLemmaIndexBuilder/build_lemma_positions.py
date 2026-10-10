@@ -116,6 +116,7 @@ def build(args):
     staged = output.with_suffix(".staging.sqlite")
     if staged.exists():
         raise FileExistsError("Existing staged index; refusing implicit overwrite.")
+    db = None
     try:
         with sqlite3.connect(staged) as db:
             db.execute("PRAGMA foreign_keys=ON")
@@ -156,8 +157,13 @@ def build(args):
             integrity = db.execute("PRAGMA quick_check").fetchone()[0]
             if integrity != "ok":
                 raise ValueError("Derived SQLite integrity failed: " + integrity)
+        # sqlite3.Connection context manager COMMITs but DOES NOT CLOSE.
+        # Explicit close is required before Windows staging-file rename.
+        db.close()
         staged.replace(output)
     except BaseException:
+        if db is not None:
+            db.close()
         staged.unlink(missing_ok=True)
         raise
     finally:
