@@ -47,7 +47,7 @@ jobs:
           & (Join-Path $source 'tools/verify-medical-payload.ps1')
           $overlays = @(
             @('NotesWebMessageBridgeV1.cs', 'cf6cb0e18db84fa75dcc149f756fcdc4377491828e12071690967b669e501c91', 'src/NivareQ.Step2Pathfinder/Services/NotesWebMessageBridgeV1.cs'),
-            @('NotesWireHarness.csproj', '58de4ec6a7de954bfa8d06f5bb004f26f712ae5cebbce2382eed537c6a', 'tests/NotesWireHarness/NotesWireHarness.csproj'),
+            @('NotesWireHarness.csproj', '58de4ec6a7de954bfa8d06f5bb004f26f712ae5cebbce238c20ea9fd7e5f9377', 'tests/NotesWireHarness/NotesWireHarness.csproj'),
             @('Program.cs', '7b8e1aaea1457942b86312adbf5c37f58d903905a8ca1b3fabea71fa85846ca9', 'tests/NotesWireHarness/Program.cs')
           )
           foreach ($entry in $overlays) {
