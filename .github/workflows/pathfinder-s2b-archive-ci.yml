@@ -86,16 +86,18 @@ jobs:
           $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($actual -ne $expected) { throw "Unexpected C# test harness hash $actual; refusing runner-only correction" }
           $source = [IO.File]::ReadAllText($file)
-          $pairs = @(
-            @('var actualJsPacket = $"""', 'var actualJsPacket = $$"""'),
-            @('{{NotesStagingPageRouterV1.Protocol}}', '{{{NotesStagingPageRouterV1.Protocol}}}'),
-            @('{{session.SessionId}}', '{{{session.SessionId}}}'),
-            @('{{draftNote}}', '{{{draftNote}}}'),
-            @('{{draftPage}}', '{{{draftPage}}}')
-          )
-          foreach ($pair in $pairs) {
-            if ($source.Split([string]$pair[0]).Count -ne 2) { throw "Missing or duplicated exact C# harness anchor: $($pair[0])" }
-            $source = $source.Replace([string]$pair[0], [string]$pair[1])
+          $pairs = [ordered]@{
+            'var actualJsPacket = $$"""' = 'var actualJsPacket = $$$"""'
+            '{{NotesStagingPageRouterV1.Protocol}}' = '{{{NotesStagingPageRouterV1.Protocol}}}'
+            '{{session.SessionId}}' = '{{{session.SessionId}}}'
+            '{{draftNote}}' = '{{{draftNote}}}'
+            '{{draftPage}}' = '{{{draftPage}}}'
+          }
+          foreach ($key in $pairs.Keys) {
+            $needle = [string]$key
+            $count = [regex]::Matches($source, [regex]::Escape($needle)).Count
+            if ($count -ne 1) { throw "Missing or duplicated exact C# harness anchor: $needle (count $count)" }
+            $source = $source.Replace($needle, [string]$pairs[$key])
           }
           [IO.File]::WriteAllText($file, $source, [Text.UTF8Encoding]::new($false))
           Write-Host 'Runner-only R5 harness CS9007 fix applied. Immutable R5 ZIP and application source not modified.'
