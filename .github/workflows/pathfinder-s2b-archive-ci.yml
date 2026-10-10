@@ -76,6 +76,30 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Correct R5 harness-only C# raw-JSON interpolation (verified source, temporary checkout)
+        if: matrix.lane == 'notes-harness'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $file = Join-Path $env:GITHUB_WORKSPACE '_pathfinder_s2b_source/tests/NotesStoreHarness/Program.cs'
+          $expected = '6b6614d3c96623827846cb8e84fb6cda0c5549fe03df10a617d7ec7fd4fee9e1'
+          $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $expected) { throw "Unexpected C# test harness hash $actual; refusing runner-only correction" }
+          $source = [IO.File]::ReadAllText($file)
+          $pairs = @(
+            @('var actualJsPacket = $"""', 'var actualJsPacket = $$"""'),
+            @('{{NotesStagingPageRouterV1.Protocol}}', '{{{NotesStagingPageRouterV1.Protocol}}}'),
+            @('{{session.SessionId}}', '{{{session.SessionId}}}'),
+            @('{{draftNote}}', '{{{draftNote}}}'),
+            @('{{draftPage}}', '{{{draftPage}}}')
+          )
+          foreach ($pair in $pairs) {
+            if ($source.Split([string]$pair[0]).Count -ne 2) { throw "Missing or duplicated exact C# harness anchor: $($pair[0])" }
+            $source = $source.Replace([string]$pair[0], [string]$pair[1])
+          }
+          [IO.File]::WriteAllText($file, $source, [Text.UTF8Encoding]::new($false))
+          Write-Host 'Runner-only R5 harness CS9007 fix applied. Immutable R5 ZIP and application source not modified.'
+
       - name: Compile and run native .NET 10 NotesStore staging harness
         if: matrix.lane == 'notes-harness'
         working-directory: ./_pathfinder_s2b_source
