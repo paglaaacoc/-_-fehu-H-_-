@@ -19,7 +19,7 @@ jobs:
         shell: pwsh
         run: |
           $m=Get-Content -Raw ./CI-R2-PRIVATE-CANDIDATE.json | ConvertFrom-Json
-          if ($m.source_sha -ne '333e19666eede451b16cb572d4df9cc3ae18a307') { throw 'Private source ref mismatch' }
+          if ($m.source_sha -ne '09f1b6847c0c00d6d0040f0414720dc7e6aae74c') { throw 'Private source ref mismatch' }
           if ($m.r5_sha -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'R5 rollback ref mismatch' }
           foreach($item in $m.blobs.PSObject.Properties) {
             $actual=(git rev-parse "HEAD:$($item.Name)").Trim()
@@ -81,7 +81,7 @@ jobs:
       - name: Publish self-contained private x64 owner-test workstation
         shell: pwsh
         run: |
-          dotnet publish ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true -p:WindowsPackageType=None -p:SourceRevisionId=333e19666eede451b16cb572d4df9cc3ae18a307 -o ./artifacts/THTRP-Build-2.0-v2.0.0-RC1-win-x64
+          dotnet publish ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true -p:WindowsPackageType=None -p:SourceRevisionId=09f1b6847c0c00d6d0040f0414720dc7e6aae74c -o ./artifacts/THTRP-Build-2.0-v2.0.0-RC1-win-x64
           if($LASTEXITCODE -ne 0) { throw 'WinUI private owner candidate publish failed' }
       - name: Merge immutable R5 portable assets and include QAC source attribution
         shell: pwsh
@@ -119,7 +119,9 @@ jobs:
           if(!$html.Contains('Universal Corpus Search') -or !$html.Contains('v2.0.0') -or $html.Contains('UNACCEPTED')) { throw 'Release guide content/version not updated' }
           $version=(Get-Item (Join-Path $root 'The Holy Quran TRP.exe')).VersionInfo.FileVersion
           if($version -ne '2.0.0.0') { throw "Expected native FileVersion 2.0.0.0 but found '$version'" }
-          Write-Host 'v2.0.0 identity, compiled native binary metadata, guide PASS'
+          $layout=Get-Content -Raw ./src/QuranReconciliation/MainWindow.xaml
+          if(!$layout.Contains('Text="v2.0.0 · The Holy Translation Reconciliation Project"')) { throw 'Stale native owner-test subtitle remains' }
+          Write-Host 'v2.0.0 identity, native XAML subtitle, compiled binary metadata, guide PASS'
       - name: Start native WinUI GUI from original and relocated portable folders
         shell: pwsh
         run: |

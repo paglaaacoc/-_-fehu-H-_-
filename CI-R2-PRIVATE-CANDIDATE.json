@@ -1,8 +1,8 @@
 {
-  "source_sha": "333e19666eede451b16cb572d4df9cc3ae18a307",
+  "source_sha": "09f1b6847c0c00d6d0040f0414720dc7e6aae74c",
   "r5_sha": "6b54c3987934caa860094adcbc92ccf504b9342b",
   "blobs": {
-    "src/QuranReconciliation/MainWindow.xaml": "435caef88b9c6a51bf7795e8dde0b1bacf66a677",
+    "src/QuranReconciliation/MainWindow.xaml": "a0e28c002eb9037d4f03a4cfa1fca07e2c8ccc60",
     "src/QuranReconciliation/MainWindow.CorpusSearch.cs": "030dee5e2b877321f23d3669418d3c81c19e2762",
     "src/QuranReconciliation/MainWindow.CorpusSearchPreview.cs": "1552f534b7b347c3bf37fb1a63613271611fdc01",
     "src/QuranReconciliation/MainWindow.CorpusOccurrences.cs": "906bfb00a2b3e17bc2dd8f0bcf8b6bb0a880237d",
@@ -21,6 +21,6 @@
     "src/QuranReconciliation/Resources/Guides/THTRP-User-Guide.html": "dfe022acb531238365019984a5bee51883df08aa"
   },
   "scope": "v2.0.0 Personal Stable candidate (owner acceptance pending): audited identity+offline guide, restore original N01 handler; private portable x64",
-  "ci_attempt": 2,
-  "ci_only_correction": "Align release identity verification folder to existing publish output path. Application source unchanged."
+  "ci_attempt": 3,
+  "ci_only_correction": "Supersede earlier CI-only root fix; pin updated release source XAML subtitle and verify no R2 R1 status appears in native UI."
 }
