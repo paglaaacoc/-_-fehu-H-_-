@@ -5,6 +5,7 @@ on:
       - dev/pathfinder-scratchpad-s2-r1-20261009
     paths:
       - NivareQ-Pathfinder-S2D-B3-INTERNAL-Full-Source-2026-10-10.zip
+      - .github/workflows/pathfinder-s2d-b3-archive-ci.yml
   workflow_dispatch:
 permissions:
   contents: read
