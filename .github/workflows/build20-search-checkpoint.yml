@@ -1,0 +1,85 @@
+name: THTRP Build 2.0 - C0 C1 Native and Search Index
+on:
+  push:
+    branches: [ci/build-2.0-search]
+    paths: [CI-FAST-CHECKPOINT.json]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: thtrp-build20-search-focused
+  cancel-in-progress: true
+jobs:
+  c0-c1-windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout isolated Build 2.0 CI mirror
+        uses: actions/checkout@v4
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Assert source provenance and isolated checkout
+        shell: pwsh
+        run: |
+          $p = Get-Content -Raw ./CI-FAST-CHECKPOINT.json | ConvertFrom-Json
+          if ($p.private_source_sha -ne 'c1493ffb994fb389705c26b6e63403d414d5bacc') { throw 'Unpinned private dev source.' }
+          if ($p.r5_rollback_sha -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'R5 rollback changed.' }
+          if ($p.source_blob_shas.Count -ne 7) { throw 'Expected exactly seven source blob assertions.' }
+          foreach ($item in $p.source_blob_shas.PSObject.Properties) {
+            $path = $item.Name
+            $expected = $item.Value
+            $actual = (git rev-parse "HEAD:$path").Trim()
+            if ($LASTEXITCODE -ne 0 -or $actual -ne $expected) {
+              throw "Private source blob mismatch: $path $actual != $expected"
+            }
+          }
+          Write-Host 'Exactly seven private C0/C1 source blobs verified.'
+      - name: Retrieve previous exact R5 packaged canonical corpus
+        uses: actions/download-artifact@v4
+        with:
+          name: The-Holy-Quran-TRP-Build-1.9-R5-win-x64
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 37973098209
+          github-token: ${{ github.token }}
+          path: ./r5-corpus-source
+      - name: Verify exact source corpus digest before tests
+        shell: pwsh
+        run: |
+          $db = './r5-corpus-source/Corpus/corpus.sqlite'
+          if (!(Test-Path $db)) { throw 'R5 canonical corpus unavailable in artifact.' }
+          $sha = (Get-FileHash -LiteralPath $db -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($sha -ne '188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862') {
+            throw "Pinned R5 source corpus mismatch: $sha"
+          }
+          Write-Host "Pinned corpus SHA-256: $sha"
+      - name: Build native Windows app with Activity and notes reveal
+        shell: pwsh
+        run: |
+          dotnet restore ./src/QuranReconciliation/QuranReconciliation.csproj -r win-x64
+          if ($LASTEXITCODE -ne 0) { throw 'Native restore failed.' }
+          dotnet build ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --no-restore -p:SourceRevisionId=c1493ffb994fb389705c26b6e63403d414d5bacc
+          if ($LASTEXITCODE -ne 0) { throw 'Native WinUI compile failed.' }
+      - name: Build offline search index using original corpus
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force ./artifacts/Search | Out-Null
+          dotnet run --project ./tools/CorpusSearchIndexBuilder/CorpusSearchIndexBuilder.csproj -c Release -- ./r5-corpus-source/Corpus/corpus.sqlite ./artifacts/Search/corpus-search.sqlite
+          if ($LASTEXITCODE -ne 0) { throw 'Corpus search builder failed.' }
+      - name: Verify Arabic and Bangla golden cases and exact index coverage
+        shell: pwsh
+        run: |
+          dotnet run --project ./tools/CorpusSearchIndexProbe/CorpusSearchIndexProbe.csproj -c Release -- ./r5-corpus-source/Corpus/corpus.sqlite ./artifacts/Search/corpus-search.sqlite
+          if ($LASTEXITCODE -ne 0) { throw 'Search index probe failed.' }
+          $db = './artifacts/Search/corpus-search.sqlite'
+          $hash = (Get-FileHash $db -Algorithm SHA256).Hash.ToLowerInvariant()
+          Write-Host "Generated search index SHA-256: $hash"
+          Write-Host "Generated search index size: $((Get-Item $db).Length)"
+      - name: Upload disposable search-index verification artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: THTRP-B20-C1-search-index-validation
+          path: ./artifacts/Search/corpus-search.sqlite
+          retention-days: 7
+          if-no-files-found: error
