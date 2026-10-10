@@ -1,0 +1,10 @@
+{
+  "private_source": "19a3968ce4626d79957e44b59ec33c9a33c574cb",
+  "rollback": "6b54c3987934caa860094adcbc92ccf504b9342b",
+  "source_blobs": {
+    "tools/CorpusLemmaIndexBuilder/build_lemma_positions.py": "f71ddbcb79a8f25bce80e28c6dd68d40c7b672cb",
+    "tools/CorpusLemmaIndexBuilder/probe_count_queries.py": "a367c9b14daf2f8596e8fe20055e09144c3ea7d1"
+  },
+  "gate": "validation-only",
+  "license": "QAC GPL annotations NOT packaged in application; no derived data uploaded"
+}
