@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+    <Compile Include="../../src/NivareQ.Step2Pathfinder/Services/NotesStoreV1.cs" Link="NotesStoreV1.cs" />
+    <Compile Include="../../src/NivareQ.Step2Pathfinder/Services/NotesStoreV1.Collections.cs" Link="NotesStoreV1.Collections.cs" />
+    <Compile Include="../../src/NivareQ.Step2Pathfinder/Services/NotesStagingPageRouterV1.cs" Link="NotesStagingPageRouterV1.cs" />
+    <Compile Include="../../src/NivareQ.Step2Pathfinder/Services/NotesWebMessageBridgeV1.cs" Link="NotesWebMessageBridgeV1.cs" />
+    <Compile Include="../../src/NivareQ.Step2Pathfinder/Services/NotesWebDocumentLifecycleV1.cs" Link="NotesWebDocumentLifecycleV1.cs" />
+    <Content Include="assets\index.html" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
