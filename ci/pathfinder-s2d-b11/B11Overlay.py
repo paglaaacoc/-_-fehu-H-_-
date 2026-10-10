@@ -57,14 +57,14 @@ for name,surface in methods:
  else: scope += ');\n'
  found=list(re.finditer(pattern,s));assert len(found)==1
  idx=found[0].end();s=s[:idx]+scope+s[idx:]
-store.write_text(s)
+store.write_text(s, newline='\n')
 collections=src/'NotesStoreV1.Collections.cs';s=collections.read_text()
 for name in ['UpdateNoteMetadata','SetActivePage','SetTrashed']:
  pattern=r'(    public long '+name+r'\([\s\S]*?\)\s*\{\n)'
  found=list(re.finditer(pattern,s));assert len(found)==1,(name,len(found))
  i=found[0].end()
  s=s[:i]+'        using var vNextNotesWrite = NotesVNextWriteInstrumentationV1.EnterNotesMutation(NotesVNextMutationSurface.NotesSqlite);\n'+s[i:]
-collections.write_text(s)
+collections.write_text(s, newline='\n')
 router=src/'NotesStagingPageRouterV1.cs';s=router.read_text()
 assert s.count('PendingSession(string noteId, string pageId, long revision)')==1
 s=s.replace('PendingSession(string noteId, string pageId, long revision)', 'PendingSession(string noteId, string pageId, long revision, long? mutationEpoch)')
@@ -73,7 +73,7 @@ assert s.count('new PendingSession(noteId, pageId, page.Revision)')==1
 s=s.replace('new PendingSession(noteId, pageId, page.Revision)','new PendingSession(noteId, pageId, page.Revision,\n                NotesVNextWriteInstrumentationV1.CaptureEpochIfAttached())')
 assert s.count('packet.Page.Cells, packet.Page.Images);')==1
 s=s.replace('packet.Page.Cells, packet.Page.Images);', 'packet.Page.Cells, packet.Page.Images, session.MutationEpoch);')
-router.write_text(s)
+router.write_text(s, newline='\n')
 for name,(_,after) in expected.items():
  assert digest(src/name)==after,f'B11 output source mismatch: {name}: {digest(src/name)}'
 print('PASS B11 exact source parity; no runtime Attach, no live generation.')
