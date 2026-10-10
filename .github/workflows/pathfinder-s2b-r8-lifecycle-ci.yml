@@ -1,5 +1,5 @@
 # Unactivated S2-B R8 lifecycle: no release build, no startup hook and no backup pointer.
-name: Pathfinder S2B R8 isolated WebView wire CI
+name: Pathfinder S2B R8 isolated lifecycle CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
       - dev/pathfinder-scratchpad-s2-r1-20261009
     paths:
       - ci/s2b-r8/**
-      - .github/workflows/pathfinder-s2b-r8-wire-ci.yml
+      - .github/workflows/pathfinder-s2b-r8-lifecycle-ci.yml
   workflow_dispatch:
 
 permissions:
