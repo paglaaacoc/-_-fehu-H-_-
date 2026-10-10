@@ -76,6 +76,35 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python tools/s2d_b3_budget_static_gate.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: B3 R2 canonical negative-test fixture correction (hash-guarded, runner only)
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $file = Join-Path $env:GITHUB_WORKSPACE '_pathfinder_s2d_b3_source/tests/NotesBackupVNextHarness/Program.cs'
+          $oldHash = '2039d471040824a1b73f36fd975c5329fc2de65b4d2c8ba7f6af775c41095fb1'
+          $newHash = '5b4596029ad4225909ea73ff4ae9992851a9143e1ac821e6acf4fdd3e63908ea'
+          $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $oldHash) { throw "Unexpected B3 source harness; no patch: $actual" }
+          $source = [IO.File]::ReadAllText($file)
+          $from = @'
+    if (obj.ValueKind != JsonValueKind.Object ||
+        obj.GetProperty("BackupSchemaVersion").GetInt32()!=7 ||
+        obj.GetProperty("FormatId").GetString()!="nivareq.step2pathfinder.backup" ||
+        obj.GetProperty("ContractAuthority").GetString()!="windows-canonical" ||
+'@
+          $to = @'
+    if (obj.ValueKind != JsonValueKind.Object ||
+        !obj.TryGetProperty("BackupSchemaVersion", out var schema) || schema.ValueKind != JsonValueKind.Number || schema.GetInt32()!=7 ||
+        !obj.TryGetProperty("FormatId", out var format) || format.ValueKind != JsonValueKind.String || format.GetString()!="nivareq.step2pathfinder.backup" ||
+        !obj.TryGetProperty("ContractAuthority", out var authority) || authority.ValueKind != JsonValueKind.String || authority.GetString()!="windows-canonical" ||
+'@
+          if ([regex]::Matches($source,[regex]::Escape($from)).Count -ne 1) { throw 'Canonical fixture anchor mismatch' }
+          $source = $source.Replace($from,$to)
+          [IO.File]::WriteAllText($file,$source,[Text.UTF8Encoding]::new($false))
+          $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $newHash) { throw "R2 fixture hash mismatch: $actual" }
+          Write-Host 'Verified test-only change: all missing canonical fields reject explicitly; B3 runtime untouched.'
       - name: Compile and run .NET 10 B1 B2 B3 adversarial backup harness
         if: matrix.lane == 'backup-harness'
         shell: pwsh
