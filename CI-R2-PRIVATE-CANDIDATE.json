@@ -1,0 +1,22 @@
+{
+  "source_sha": "ed3cdaabe53773ef58ca0443c590d879b4ba91b9",
+  "r5_sha": "6b54c3987934caa860094adcbc92ccf504b9342b",
+  "blobs": {
+    "src/QuranReconciliation/MainWindow.xaml": "caa27c41d5405486a585cc5b2bfda80b55ae9267",
+    "src/QuranReconciliation/MainWindow.CorpusSearch.cs": "7098fcd82e1ceb3360f40e8f91d3fc2e100ae621",
+    "src/QuranReconciliation/MainWindow.CorpusSearchPreview.cs": "471b1cf21b733ec419c4e0c60d0eaa26dcff8d52",
+    "src/QuranReconciliation/MainWindow.CorpusOccurrences.cs": "b9cbeadeca6f7530eb570901acc1f1a1d21ac610",
+    "src/QuranReconciliation/Infrastructure/CorpusOccurrenceRepository.cs": "785833a63594762d63723ec8f7b78afab7fc560d",
+    "src/QuranReconciliation/Infrastructure/AppPaths.cs": "60efb44b38107a0955fa1c7c1d511817db085404",
+    "src/QuranReconciliation/QuranReconciliation.csproj": "931605b98b9c10891eec7442bc564c7ec0b258f6",
+    "src/QuranReconciliation/Resources/SearchIndex/QAC-MORPHOLOGY-ATTRIBUTION.md": "45d55235692a212328210e7c93814f55a89a5f30",
+    "src/QuranReconciliation/Infrastructure/BuildIdentity.cs": "0c1085d602ffea5b76454e9969d35d5787a424a7",
+    "tools/CorpusOccurrenceQueryProbe/Program.cs": "af153b676696ed858967477e0b006af882d61630",
+    "tools/CorpusOccurrenceQueryProbe/CorpusOccurrenceQueryProbe.csproj": "4444626448349056cf05ef732e679ff09a8d9b52",
+    "tools/CorpusLemmaIndexBuilder/build_lemma_positions.py": "04790f27f2086a6601767ddc9fbafed9c5f2bea7",
+    "tools/CorpusLemmaAlignmentProbe/validate_lemma_alignment.py": "4d3f61d83fbc91acb5d89115155e1101839ef54f",
+    "src/QuranReconciliation/Infrastructure/CorpusSearchRepository.cs": "b31969b1fc9ec3135bfa34db83042b923f68ac81",
+    "src/QuranReconciliation/Infrastructure/CorpusSearchTextNormalizer.cs": "a43743c129aa67a3e77592a7edbd0abdf1d6a627"
+  },
+  "scope": "private personal Windows x64 owner-test candidate; exact source and QAC provenance"
+}
