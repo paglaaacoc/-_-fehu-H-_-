@@ -306,7 +306,7 @@ jobs:
             $tests=Join-Path $root 'tests/NotesVNextRealSaveHooksHarness'
             New-Item -ItemType Directory -Path $tests -Force | Out-Null
             $testFiles=@{
-             'Program.cs'='78591eea33003a8b7e0e6db85f14b8236322e290'
+             'Program.cs'='1fcf7d43cf7ddb87686c5bf22119839736abcec8'
              'NotesVNextRealSaveHooksHarness.csproj'='91bf6f301ca862584b1951bb7c30defc8130df23'
             }
             foreach($entry in $testFiles.GetEnumerator()){
