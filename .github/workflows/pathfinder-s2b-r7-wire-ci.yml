@@ -52,11 +52,16 @@ jobs:
           )
           foreach ($entry in $overlays) {
             $overlay = Join-Path $root ('ci/s2b-r7/' + $entry[0])
-            $actual = (Get-FileHash -LiteralPath $overlay -Algorithm SHA256).Hash.ToLowerInvariant()
-            if ($actual -ne $entry[1]) { throw "R7 overlay hash mismatch: $($entry[0]) $actual" }
+            # Windows checkout can convert LF to CRLF. Verify canonical LF
+            # source bytes and explicitly write them without BOM for native CI.
+            $text = [Text.UTF8Encoding]::new($false,$true).GetString([IO.File]::ReadAllBytes($overlay))
+            $text = $text.Replace(([string][char]13 + [string][char]10),[string][char]10)
+            $bytes = [Text.UTF8Encoding]::new($false).GetBytes($text)
+            $actual = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
+            if ($actual -ne $entry[1]) { throw "R7 canonical LF SHA-256 mismatch: $($entry[0]) $actual" }
             $destination = Join-Path $source $entry[2]
             New-Item -ItemType Directory -Force -Path (Split-Path $destination) | Out-Null
-            Copy-Item -LiteralPath $overlay -Destination $destination
+            [IO.File]::WriteAllBytes($destination,$bytes)
           }
           Write-Host 'Unchanged R5 source and three R7 native overlay files verified.'
       - uses: actions/setup-dotnet@v4
