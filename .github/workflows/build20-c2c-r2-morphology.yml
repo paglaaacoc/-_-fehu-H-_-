@@ -16,10 +16,10 @@ jobs:
         shell: pwsh
         run: |
           $m=Get-Content -Raw ./CI-MORPH-ALIGNMENT-CHECKPOINT.json | ConvertFrom-Json
-          if ($m.private_source -ne '96391be8517b7f6672950cb364ed607f9bc3db70') { throw 'Source ref mismatch' }
+          if ($m.private_source -ne 'd97875b455200724f0c483b372b18715437a01fc') { throw 'Source ref mismatch' }
           if ($m.r5_rollback -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'Rollback mismatch' }
           $actual=(git rev-parse 'HEAD:tools/CorpusLemmaAlignmentProbe/validate_lemma_alignment.py').Trim()
-          if ($actual -ne 'ca878fe1ab8c3c07d7e36143809e30820f523459') { throw 'Private source blob differs' }
+          if ($actual -ne '4d3f61d83fbc91acb5d89115155e1101839ef54f') { throw 'Private source blob differs' }
       - name: Retrieve frozen R5 canonical corpus and word positions
         uses: actions/download-artifact@v4
         with:
