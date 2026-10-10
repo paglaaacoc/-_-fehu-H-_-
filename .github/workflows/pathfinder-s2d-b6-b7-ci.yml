@@ -1,0 +1,199 @@
+name: Pathfinder S2D B6-B7 isolated mutation and restore preflight CI
+on:
+  push:
+    branches:
+      - dev/pathfinder-scratchpad-s2-r1-20261009
+    paths:
+      - ci/pathfinder-s2d-b6-b7/**
+      - .github/workflows/pathfinder-s2d-b6-b7-ci.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-gates:
+    if: github.ref == 'refs/heads/dev/pathfinder-scratchpad-s2-r1-20261009'
+    runs-on: windows-latest
+    timeout-minutes: 85
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lane: backup-harness
+            platform: x64
+            rid: win-x64
+          - lane: winui-x64
+            platform: x64
+            rid: win-x64
+          - lane: winui-arm64
+            platform: ARM64
+            rid: win-arm64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify immutable B3 ZIP, manifest and medical payload before execution
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = Join-Path $env:GITHUB_WORKSPACE 'NivareQ-Pathfinder-S2D-B3-INTERNAL-Full-Source-2026-10-10.zip'
+          if (-not (Test-Path -LiteralPath $zip -PathType Leaf)) { throw 'B3 source ZIP missing.' }
+          $expected = '226728052a16d5d88ca470d7c17b15324de5e517c2b09788475925472c640a27'
+          $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hash -ne $expected) { throw "Wrong source ZIP SHA: $hash" }
+          $dst = Join-Path $env:GITHUB_WORKSPACE '_pathfinder_s2d_b3_source'
+          New-Item -ItemType Directory -Force -Path $dst | Out-Null
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [IO.Compression.ZipFile]::ExtractToDirectory($zip,$dst)
+          $manifest = Get-Content -LiteralPath (Join-Path $dst 'INTEGRITY-S2D-B3-MANIFEST.json') -Raw | ConvertFrom-Json
+          if ($manifest.checkpoint -notlike 'S2-D B3 INTERNAL*') { throw 'Wrong B3 source manifest.' }
+          $entries = @($manifest.hashes_sha256_excluding_this_manifest.PSObject.Properties)
+          if ($entries.Count -ne 609) { throw "B3 manifest count mismatch: $($entries.Count)" }
+          foreach ($e in $entries) {
+            $path = [string]$e.Name
+            if ($path.Contains('..') -or [IO.Path]::IsPathRooted($path) -or $path.StartsWith('/')) { throw "Unsafe source path: $path" }
+            $file = Join-Path $dst $path
+            if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "Missing source: $path" }
+            if ((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant() -ne [string]$e.Value) { throw "Source hash mismatch: $path" }
+          }
+          & (Join-Path $dst 'tools/verify-medical-payload.ps1')
+          Write-Host 'PASS exact B3 source, 609 signed-manifest hashes and 132 preserved medical files.'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Run portable B1 B2 B3 static and inherited JS contract guards
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: |
+          node tests/NotesProtocolHarness/run.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/NotesWebTransportHarness/run.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/NotesLifecycleJsHarness/run.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/s2d_b1_static_gate.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/s2d_b2_coherent_static_gate.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/s2d_b3_budget_static_gate.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: B3 R2 canonical negative-test fixture correction (hash-guarded, runner only)
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $file = Join-Path $env:GITHUB_WORKSPACE '_pathfinder_s2d_b3_source/tests/NotesBackupVNextHarness/Program.cs'
+          $oldHash = '2039d471040824a1b73f36fd975c5329fc2de65b4d2c8ba7f6af775c41095fb1'
+          $newHash = '5b4596029ad4225909ea73ff4ae9992851a9143e1ac821e6acf4fdd3e63908ea'
+          $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $oldHash) { throw "Unexpected B3 source harness; no patch: $actual" }
+          $source = [IO.File]::ReadAllText($file)
+          $pairs = @(
+            @{ from = 'obj.GetProperty("BackupSchemaVersion").GetInt32()!=7'; to = '!obj.TryGetProperty("BackupSchemaVersion", out var schema) || schema.ValueKind != JsonValueKind.Number || schema.GetInt32()!=7' },
+            @{ from = 'obj.GetProperty("FormatId").GetString()!="nivareq.step2pathfinder.backup"'; to = '!obj.TryGetProperty("FormatId", out var format) || format.ValueKind != JsonValueKind.String || format.GetString()!="nivareq.step2pathfinder.backup"' },
+            @{ from = 'obj.GetProperty("ContractAuthority").GetString()!="windows-canonical"'; to = '!obj.TryGetProperty("ContractAuthority", out var authority) || authority.ValueKind != JsonValueKind.String || authority.GetString()!="windows-canonical"' }
+          )
+          foreach ($pair in $pairs) {
+            if ([regex]::Matches($source,[regex]::Escape([string]$pair.from)).Count -ne 1) { throw "B3 R2 fixture anchor absent or ambiguous: $($pair.from)" }
+            $source = $source.Replace([string]$pair.from, [string]$pair.to)
+          }
+          [IO.File]::WriteAllText($file,$source,[Text.UTF8Encoding]::new($false))
+          $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $newHash) { throw "R2 fixture hash mismatch: $actual" }
+          Write-Host 'Verified test-only change: all missing canonical fields reject explicitly; B3 runtime untouched.'
+      - name: Overlay and hash-verify exact B4/B5 staged sources (all lanes)
+        shell: pwsh
+        env:
+          PF_LANE: ${{ matrix.lane }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $stage = Join-Path $env:GITHUB_WORKSPACE '_pathfinder_s2d_b3_source'
+          $ci = Join-Path $env:GITHUB_WORKSPACE 'ci/pathfinder-s2d-b4'
+          $services = Join-Path $stage 'src/NivareQ.Step2Pathfinder/Services'
+          $sources = @{
+            'NotesVNextProviderAuthorityV1.cs'='2fe04ff9b1b184e3de48b8ead7c3627e0fbdc539a195adc18c4190912a9cfe4f'
+            'NotesVNextCanonicalBridgeV1.cs'='584ae1dda3f93d01d2ba3a3f4b1940b8c9f1ce478b72644bdfcc3e7f52dea1e6'
+            'NotesVNextRestorePreparationV1.cs'='6597d66f384f629f85e3a8f8964b8cf55ce2cfa6767e5cfb28912796cf68197c'
+          }
+          foreach ($entry in $sources.GetEnumerator()) {
+            $src = Join-Path $ci $entry.Key
+            if ((Get-FileHash -LiteralPath $src -Algorithm SHA256).Hash.ToLowerInvariant() -ne $entry.Value) { throw "S2D B4/B5 GitHub source differs: $($entry.Key)" }
+            $dst = Join-Path $services $entry.Key
+            if (Test-Path -LiteralPath $dst) { throw "Refusing to overwrite inherited production path: $dst" }
+            Copy-Item -LiteralPath $src -Destination $dst
+            if ((Get-FileHash -LiteralPath $dst -Algorithm SHA256).Hash.ToLowerInvariant() -ne $entry.Value) { throw "Overlay source mismatch: $($entry.Key)" }
+          }
+          if ($env:PF_LANE -eq 'backup-harness') {
+            $project = Join-Path $stage 'tests/NotesBackupVNextHarness/NotesBackupVNextHarness.csproj'
+            $xml = [IO.File]::ReadAllText($project)
+            $anchor = '  <Compile Include="../../src/NivareQ.Step2Pathfinder/Services/NotesBackupVNextV1.cs" Link="NotesBackupVNextV1.cs" />'
+            if ($xml.Split([string[]]@($anchor),[StringSplitOptions]::None).Count -ne 2) { throw 'Missing unique native harness project anchor.' }
+            $xml = $xml.Replace($anchor,$anchor + "`n  <Compile Include=`"../../src/NivareQ.Step2Pathfinder/Services/NotesVNextProviderAuthorityV1.cs`" Link=`"NotesVNextProviderAuthorityV1.cs`" />")
+            [IO.File]::WriteAllText($project,$xml,[Text.UTF8Encoding]::new($false))
+            if ((Get-FileHash -LiteralPath $project -Algorithm SHA256).Hash.ToLowerInvariant() -ne '76231a6a88e6d6d13dd10957cc008f49bf2054dbf335541d0e6b8c38c4e14c68') { throw 'B4 native harness project parity failed.' }
+            $program = Join-Path $stage 'tests/NotesBackupVNextHarness/Program.cs'
+            if ((Get-FileHash -LiteralPath $program -Algorithm SHA256).Hash.ToLowerInvariant() -ne '5b4596029ad4225909ea73ff4ae9992851a9143e1ac821e6acf4fdd3e63908ea') { throw 'B3 R2 harness parent parity failed.' }
+            $code = [IO.File]::ReadAllText($program)
+            $anchor = 'var temp=Path.Combine(Path.GetTempPath(),"nqpf-vnext-b1-"+Guid.NewGuid().ToString("N"));'
+            if ($code.Split([string[]]@($anchor),[StringSplitOptions]::None).Count -ne 2) { throw 'Missing unique B4 test insertion anchor.' }
+            $snippet = [IO.File]::ReadAllText((Join-Path $ci 'ProviderPolicyAssertions.txt'))
+            if ((Get-FileHash -LiteralPath (Join-Path $ci 'ProviderPolicyAssertions.txt') -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'cd7241659eab894dbbb2c5469955b6c7e9821e54dd9f23b305bb5c107ec90f70') { throw 'B4 fixture assertions mismatch.' }
+            [IO.File]::WriteAllText($program,$code.Replace($anchor,$snippet+$anchor),[Text.UTF8Encoding]::new($false))
+            if ((Get-FileHash -LiteralPath $program -Algorithm SHA256).Hash.ToLowerInvariant() -ne '5c1cb6fdd158e1ec595e2a14bc53398aaf0ff302ff19ccdc9cebee26d12a5ba9') { throw 'B4/B5 native test source parity failed.' }
+          }
+          Write-Host 'S2D B4/B5: verified exact local and GitHub source hashes, no live feature hook.'
+      - name: Hash-guarded B6 B7 inactive overlay and coordinator test harness
+        shell: pwsh
+        env:
+          PF_LANE: ${{ matrix.lane }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ci = Join-Path $env:GITHUB_WORKSPACE 'ci/pathfinder-s2d-b6-b7'
+          $stage = Join-Path $env:GITHUB_WORKSPACE '_pathfinder_s2d_b3_source'
+          $services = Join-Path $stage 'src/NivareQ.Step2Pathfinder/Services'
+          $source = @{
+            'NotesVNextMutationCoordinatorV1.cs'='602361c3baa08061d34d2235a1ccccf68d63187fbf8f39f2a16596f1335313f7'
+            'NotesVNextSevenProviderPlanV1.cs'='ded5f3f553a28e9d640f21e9728c7042386ac3cba9494e72dbc5ea97df342cdf'
+          }
+          foreach ($pair in $source.GetEnumerator()) {
+            $inputPath = Join-Path $ci $pair.Key
+            $destPath = Join-Path $services $pair.Key
+            if ((Get-FileHash -LiteralPath $inputPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $pair.Value) { throw "GitHub source mismatch: $($pair.Key)" }
+            if (Test-Path -LiteralPath $destPath) { throw "Refusing to overwrite inherited source: $destPath" }
+            Copy-Item -LiteralPath $inputPath -Destination $destPath
+            if ((Get-FileHash -LiteralPath $destPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $pair.Value) { throw "B6/B7 overlay hash mismatch." }
+          }
+          if ($env:PF_LANE -eq 'backup-harness') {
+            $tests = Join-Path $stage 'tests/NotesVNextCoordinatorHarness'
+            New-Item -ItemType Directory -Path $tests -ErrorAction Stop | Out-Null
+            $files = @{
+              'NotesVNextCoordinatorHarness-Program.cs'=@('Program.cs','be0401d66ab99966ea8dde700b67611ec021337bed3be0ba94a0c0a2a1bcc414')
+              'NotesVNextCoordinatorHarness.csproj'=@('NotesVNextCoordinatorHarness.csproj','ed38d3a1a37a88804973cb2a45a35fcb544c742b200ffa34ca7f11c494016f3f')
+            }
+            foreach ($pair in $files.GetEnumerator()) {
+              $p = Join-Path $ci $pair.Key
+              if ((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() -ne $pair.Value[1]) { throw "Native harness source mismatch: $($pair.Key)" }
+              Copy-Item -LiteralPath $p -Destination (Join-Path $tests $pair.Value[0])
+            }
+          }
+          Write-Host 'B6 B7 byte-exact inactive overlays: sources and .NET coordinator harness staged.'
+      - name: Compile and run .NET 10 B1 B2 B3 adversarial backup harness
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet run -c Release --project tests/NotesBackupVNextHarness/NotesBackupVNextHarness.csproj
+      - name: Run B6 native writer ACK restore epoch adversarial tests
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet run -c Release --project tests/NotesVNextCoordinatorHarness/NotesVNextCoordinatorHarness.csproj
+      - name: Restore WinUI (no installer, release or live Notes activation)
+        if: matrix.lane != 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet restore src/NivareQ.Step2Pathfinder/NivareQ.Step2Pathfinder.csproj -r ${{ matrix.rid }} -p:Platform=${{ matrix.platform }}
+      - name: Compile native WinUI
+        if: matrix.lane != 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet build src/NivareQ.Step2Pathfinder/NivareQ.Step2Pathfinder.csproj -c Release -r ${{ matrix.rid }} --no-restore -p:Platform=${{ matrix.platform }}
