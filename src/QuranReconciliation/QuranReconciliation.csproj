@@ -40,6 +40,15 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
 
+    <!-- The verified C1 index is staged by the packaging pipeline.
+         It is not committed to the authoritative source repository. -->
+    <Content Include="Resources\SearchIndex\corpus-search.sqlite"
+             Condition="Exists('Resources\SearchIndex\corpus-search.sqlite')">
+      <TargetPath>Corpus\corpus-search.sqlite</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+
     <Content Include="Resources\juz-map.json">
       <TargetPath>Corpus\juz-map.json</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -44,7 +44,7 @@
                                FontSize="29"
                                FontWeight="SemiBold"/>
                     <TextBlock x:Name="TopBarSubtitleText"
-                               Text="Build 1.9 R5 · UNACCEPTED owner-test candidate"
+                               Text="Build 2.0 C2b R1 · Development checkpoint, not owner accepted"
                                Foreground="{StaticResource MutedTextBrush}"
                                FontSize="15"
                                Margin="0,3,0,0"/>
@@ -1468,6 +1468,146 @@
         </Grid>
 
 
+        <!-- C2b: Search is an independent workspace, not a change to research storage. -->
+        <Grid x:Name="CorpusSearchWorkspaceGrid" Grid.Row="1"
+              Visibility="Collapsed"
+              Background="{StaticResource AppBackgroundBrush}"
+              Padding="28,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Content="← Back to research"
+                        Padding="14,7"
+                        Margin="0,0,18,0"
+                        Click="CloseCorpusSearch_Click"/>
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="Qur'an Corpus Search / কুরআন অনুসন্ধান"
+                               Foreground="{StaticResource TextBrush}"
+                               FontSize="28"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="Offline Arabic, English and বাংলা search of Qur'anic Ayat and verified translations. Tafsir is excluded."
+                               Foreground="{StaticResource MutedTextBrush}"
+                               FontSize="14" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Grid>
+            <Border Grid.Row="1" Margin="0,18,0,0"
+                    Background="{StaticResource PanelAltBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="14">
+                <StackPanel Spacing="12">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="CorpusSearchTextBox"
+                                 Header="Arabic, English or বাংলা word / phrase"
+                                 PlaceholderText="الله · mercy · আল্লাহ"
+                                 MaxLength="256"
+                                 TextChanged="CorpusSearchTextBox_TextChanged"/>
+                        <Button x:Name="CorpusSearchSubmitButton" Grid.Column="1"
+                                Content="Search" Padding="20,8"
+                                VerticalAlignment="Bottom"
+                                Click="CorpusSearchSubmit_Click"/>
+                    </Grid>
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="190"/>
+                            <ColumnDefinition Width="210"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="CorpusSearchLanguageSelector" Header="Language"
+                                  HorizontalAlignment="Stretch" SelectedIndex="0"
+                                  SelectionChanged="CorpusSearchFilter_Changed">
+                            <ComboBoxItem Content="All languages" Tag="all"/>
+                            <ComboBoxItem Content="Arabic" Tag="arabic"/>
+                            <ComboBoxItem Content="English" Tag="english"/>
+                            <ComboBoxItem Content="বাংলা / Bangla" Tag="bangla"/>
+                        </ComboBox>
+                        <ComboBox x:Name="CorpusSearchScriptSelector" Grid.Column="1"
+                                  Header="Arabic script" HorizontalAlignment="Stretch"
+                                  SelectedIndex="0" IsEnabled="False"
+                                  SelectionChanged="CorpusSearchFilter_Changed">
+                            <ComboBoxItem Content="All Arabic scripts" Tag="all"/>
+                            <ComboBoxItem Content="Uthmani" Tag="uthmani"/>
+                            <ComboBoxItem Content="IndoPak" Tag="indopak"/>
+                            <ComboBoxItem Content="IndoPak Nastaleeq" Tag="indopak-nastaleeq"/>
+                        </ComboBox>
+                        <ComboBox x:Name="CorpusSearchTranslationSelector" Grid.Column="2"
+                                  Header="Translation source" HorizontalAlignment="Stretch"
+                                  SelectedIndex="0"
+                                  SelectionChanged="CorpusSearchFilter_Changed">
+                            <ComboBoxItem Content="All translation sources" Tag="-1"/>
+                        </ComboBox>
+                        <CheckBox x:Name="CorpusSearchNormalizedToggle" Grid.Column="3"
+                                  Content="Include normalized" IsChecked="True"
+                                  Foreground="{StaticResource TextBrush}"
+                                  VerticalAlignment="Bottom" Margin="0,0,0,8"
+                                  Checked="CorpusSearchFilter_Changed"
+                                  Unchecked="CorpusSearchFilter_Changed"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+            <TextBlock x:Name="CorpusSearchSummaryText" Grid.Row="2"
+                       Text="Enter a word or phrase. Exact hits precede normalized matches."
+                       Foreground="{StaticResource MutedTextBrush}"
+                       FontSize="13" TextWrapping="Wrap" Margin="0,14,0,10"/>
+            <ListView x:Name="CorpusSearchResultsList" Grid.Row="3"
+                      Background="Transparent" SelectionMode="None"
+                      HorizontalContentAlignment="Stretch"
+                      ScrollViewer.VerticalScrollMode="Enabled"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.HorizontalScrollMode="Disabled"
+                      ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel/>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{StaticResource PanelBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="8"
+                                Padding="14" Margin="0,0,0,9">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="{Binding Location}" FontSize="17"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextBrush}"/>
+                                <TextBlock Text="{Binding Source}" FontSize="12"
+                                           TextWrapping="Wrap"
+                                           Foreground="{StaticResource MutedTextBrush}"/>
+                                <TextBlock Text="{Binding MatchLabel}" FontSize="12"
+                                           Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="{Binding Text}" FontSize="18"
+                                           TextWrapping="Wrap" MaxLines="5"
+                                           TextTrimming="CharacterEllipsis"
+                                           IsTextSelectionEnabled="True"
+                                           Foreground="{StaticResource TextBrush}"/>
+                                <Button Content="Read Ayah ↗" Padding="14,6"
+                                        HorizontalAlignment="Left"
+                                        Tag="{Binding}" Click="CorpusSearchReadAyah_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Button x:Name="CorpusSearchLoadMoreButton" Grid.Row="4"
+                    Content="Load more results" Visibility="Collapsed"
+                    HorizontalAlignment="Center" Padding="20,8"
+                    Margin="0,12,0,0" Click="CorpusSearchLoadMore_Click"/>
+        </Grid>
+
         <Border Grid.Row="2"
                 Background="{StaticResource PanelBrush}"
                 BorderBrush="{StaticResource BorderBrush}"
@@ -1476,6 +1616,7 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -1512,14 +1653,19 @@
                         Margin="6,0,0,0"
                         Click="OpenHistory_Click"/>
 
+                <Button x:Name="CorpusSearchNavButton"
+                        Grid.Column="4" Content="Corpus Search"
+                        Padding="12,4" Margin="6,0,0,0"
+                        Click="OpenCorpusSearch_Click"/>
+
                 <Button x:Name="ContextAtlasNavButton"
-                        Grid.Column="4"
+                        Grid.Column="5"
                         Content="Context Atlas"
                         Padding="12,4"
                         Margin="6,0,0,0"
                         Click="OpenContextAtlas_Click"/>
 
-                <Button Grid.Column="5"
+                <Button Grid.Column="6"
                         Content="Data safety"
                         Padding="12,4"
                         Margin="6,0,0,0">
@@ -1540,7 +1686,7 @@
                     </Button.Flyout>
                 </Button>
 
-                <Button Grid.Column="6"
+                <Button Grid.Column="7"
                         Content="Layout"
                         Padding="12,4"
                         Margin="6,0,0,0">
@@ -1566,7 +1712,7 @@
                     </Button.Flyout>
                 </Button>
 
-                <Button Grid.Column="7"
+                <Button Grid.Column="8"
                         Content="Help &amp; Guide"
                         Padding="12,4"
                         Margin="6,0,0,0"

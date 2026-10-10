@@ -108,6 +108,8 @@ public sealed partial class MainWindow
             Visibility.Collapsed;
         ContextAtlasWorkspaceGrid.Visibility =
             Visibility.Collapsed;
+        CorpusSearchWorkspaceGrid.Visibility =
+            Visibility.Collapsed;
         WorkingSliceWorkspaceGrid.Visibility =
             Visibility.Visible;
 

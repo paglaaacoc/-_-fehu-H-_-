@@ -57,7 +57,11 @@ public sealed partial class MainWindow
         find.Invoked +=
             (_, args) =>
             {
-                if (HistoryWorkspaceGrid.Visibility ==
+                if (CorpusSearchWorkspaceGrid.Visibility == Visibility.Visible)
+                {
+                    CorpusSearchTextBox.Focus(FocusState.Programmatic);
+                }
+                else if (HistoryWorkspaceGrid.Visibility ==
                     Visibility.Visible)
                 {
                     HistoryWorkspaceSearchTextBox.Focus(
@@ -71,8 +75,8 @@ public sealed partial class MainWindow
                 }
                 else
                 {
-                    StatusText.Text =
-                        "Ctrl+F is available in History and Working Slices.";
+                    OpenCorpusSearchWorkspace();
+                    CorpusSearchTextBox.Focus(FocusState.Programmatic);
                 }
 
                 args.Handled = true;
@@ -109,7 +113,8 @@ public sealed partial class MainWindow
         if (ResearchNavButton is null ||
             WorkingSlicesNavButton is null ||
             HistoryNavButton is null ||
-            ContextAtlasNavButton is null)
+            ContextAtlasNavButton is null ||
+            CorpusSearchNavButton is null)
         {
             return;
         }
@@ -130,6 +135,9 @@ public sealed partial class MainWindow
             ContextAtlasWorkspaceGrid.Visibility ==
                 Visibility.Visible;
 
+        bool corpusSearchActive =
+            CorpusSearchWorkspaceGrid.Visibility == Visibility.Visible;
+
         ApplyWorkspaceNavState(
             ResearchNavButton,
             researchActive);
@@ -145,6 +153,10 @@ public sealed partial class MainWindow
         ApplyWorkspaceNavState(
             ContextAtlasNavButton,
             atlasActive);
+
+        ApplyWorkspaceNavState(
+            CorpusSearchNavButton,
+            corpusSearchActive);
     }
 
     private void ApplyWorkspaceNavState(

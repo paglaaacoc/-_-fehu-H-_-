@@ -42,6 +42,9 @@ public sealed partial class MainWindow
         HistoryWorkspaceGrid.Visibility =
             Visibility.Collapsed;
 
+        CorpusSearchWorkspaceGrid.Visibility =
+            Visibility.Collapsed;
+
         ContextAtlasWorkspaceGrid.Visibility =
             Visibility.Visible;
 

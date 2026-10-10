@@ -14,10 +14,10 @@ internal static class BuildIdentity
         "THTRP";
 
     internal const string Version =
-        "Build 1.9 R5";
+        "Build 2.0 C2b R1";
 
     internal const string Label =
-        "The Holy Quran TRP Build 1.9 R5";
+        "The Holy Quran TRP Build 2.0 C2b R1";
 
     internal static string SourceRevision
     {

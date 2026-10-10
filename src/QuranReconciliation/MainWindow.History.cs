@@ -26,6 +26,7 @@ public sealed partial class MainWindow
         WorkspaceGrid.Visibility = Visibility.Collapsed;
         WorkingSliceWorkspaceGrid.Visibility = Visibility.Collapsed;
         ContextAtlasWorkspaceGrid.Visibility = Visibility.Collapsed;
+        CorpusSearchWorkspaceGrid.Visibility = Visibility.Collapsed;
         HistoryWorkspaceGrid.Visibility = Visibility.Visible;
 
         EnsureHistorySurahFilterBuilt();
@@ -70,6 +71,7 @@ public sealed partial class MainWindow
         HistoryWorkspaceGrid.Visibility = Visibility.Collapsed;
         WorkingSliceWorkspaceGrid.Visibility = Visibility.Collapsed;
         ContextAtlasWorkspaceGrid.Visibility = Visibility.Collapsed;
+        CorpusSearchWorkspaceGrid.Visibility = Visibility.Collapsed;
         WorkspaceGrid.Visibility = Visibility.Visible;
         UpdateWorkspaceContentWidth();
         UpdateWorkspaceNavigationState();
