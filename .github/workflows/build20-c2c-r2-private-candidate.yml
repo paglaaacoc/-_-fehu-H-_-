@@ -155,6 +155,27 @@ jobs:
           }
           Remove-Item $copy -Recurse -Force
           Write-Host 'R2 private owner build native WinUI launch / folder relocation PASS'
+      - name: Enforce clean stateless release package AFTER native GUI smoke
+        shell: pwsh
+        run: |
+          $root=(Resolve-Path ./artifacts/THTRP-v2.0.0-Personal-Stable-Final-UI-win-x64).Path
+          foreach($dirName in @('Data', 'Backups', 'Diagnostics')) {
+            $target=Join-Path $root $dirName
+            for($retry=1; $retry -le 8 -and (Test-Path $target); $retry++) {
+              Remove-Item $target -Recurse -Force -ErrorAction SilentlyContinue
+              if(Test-Path $target) { Start-Sleep -Seconds 1 }
+            }
+            if(Test-Path $target) { throw "Release package contains forbidden runtime state: $target" }
+          }
+          $sidecars=Get-ChildItem $root -Recurse -File | Where-Object { $_.Name -match '(?i)\\.sqlite-(?:wal|shm)
+        with:
+          name: The-Holy-Quran-TRP-v2.0.0-Personal-Stable-Final-UI-win-x64
+          path: artifacts/THTRP-v2.0.0-Personal-Stable-Final-UI-win-x64/
+          retention-days: 7
+          if-no-files-found: error
+ -or $_.Name -eq 'owner-state-operation.json' }
+          if($sidecars) { throw "Release package contains runtime SQLite sidecar or recovery journal: $($sidecars.FullName -join ', ')" }
+          Write-Host 'Clean release package PASS: no Data/Backups/Diagnostics or SQLite runtime sidecars'
       - uses: actions/upload-artifact@v4
         with:
           name: The-Holy-Quran-TRP-v2.0.0-Personal-Stable-Final-UI-win-x64
