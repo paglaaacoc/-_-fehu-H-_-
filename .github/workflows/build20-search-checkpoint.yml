@@ -26,7 +26,7 @@ jobs:
           $p = Get-Content -Raw ./CI-FAST-CHECKPOINT.json | ConvertFrom-Json
           if ($p.private_source_sha -ne 'c1493ffb994fb389705c26b6e63403d414d5bacc') { throw 'Unpinned private dev source.' }
           if ($p.r5_rollback_sha -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'R5 rollback changed.' }
-          if ($p.source_blob_shas.Count -ne 7) { throw 'Expected exactly seven source blob assertions.' }
+          if (@($p.source_blob_shas.PSObject.Properties).Count -ne 7) { throw 'Expected exactly seven source blob assertions.' }
           foreach ($item in $p.source_blob_shas.PSObject.Properties) {
             $path = $item.Name
             $expected = $item.Value
