@@ -32,7 +32,7 @@ try
           documentToken=lease??token,requestId,type=action,payload});
     JsonDocument Send(string action,object payload,string id="req_1")
       => JsonDocument.Parse(host.Handle(origin,Packet(action,payload,id)));
-    Deny(()=>host.Handle(origin,Packet("notes-open",new{noteId=note,pageId=page},lease=new string('0',48))),
+    Deny(()=>host.Handle(origin,Packet("notes-open",new{noteId=note,pageId=page},lease:new string('0',48))),
        "forged lease"); count++;
     Deny(()=>host.Handle("https://evil.invalid/index.html",Packet("notes-open",new{noteId=note,pageId=page})),
        "foreign page origin"); count++;
