@@ -41,7 +41,7 @@ addition='''    // B11 staging-only guard: holds the B6 writer lease through an 
     }
 
 '''
-inst.write_text(s.replace(needle,addition+needle))
+inst.write_text(s.replace(needle,addition+needle), newline='\n')
 store=src/'NotesStoreV1.cs';s=store.read_text()
 methods=[('CreateNotebook','NotesSqlite'),('CreateNote','NotesSqlite'),('AddPage','NotesSqlite'),('SavePage','NotesSqlite'),('PutAttachment','NotesAttachments'),('SealStaging','NotesSqlite'),('ImportS1','LegacyS1Persistence')]
 for name,surface in methods:
