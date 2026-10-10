@@ -1,0 +1,51 @@
+name: THTRP Build 2.0 C2c Search Latency
+on:
+  push:
+    branches: [ci/build-2.0-search]
+    paths: [CI-LATENCY-CHECKPOINT.json]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  measure:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Check exact private latency probe source
+        shell: pwsh
+        run: |
+          $p=Get-Content -Raw ./CI-LATENCY-CHECKPOINT.json | ConvertFrom-Json
+          if ($p.source_sha -ne 'b27f3d1aa7639179adf33155f27d9b70a04d1973') { throw 'Private source changed' }
+          foreach ($item in $p.blobs.PSObject.Properties) {
+            $actual=(git rev-parse "HEAD:$($item.Name)").Trim()
+            if ($actual -ne $item.Value) { throw "Git blob mismatch: $($item.Name)" }
+          }
+      - name: Fetch frozen canonical R5 corpus
+        uses: actions/download-artifact@v4
+        with:
+          name: The-Holy-Quran-TRP-Build-1.9-R5-win-x64
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 37973098209
+          github-token: ${{ github.token }}
+          path: ./r5
+      - name: Fetch verified search-index artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: THTRP-B20-C1-search-index-validation
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 38025181456
+          github-token: ${{ github.token }}
+          path: ./search
+      - name: Measure cold validation and search query latency
+        shell: pwsh
+        run: |
+          if ((Get-FileHash ./r5/Corpus/corpus.sqlite -Algorithm SHA256).Hash.ToLowerInvariant() -ne
+             '188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862') { throw 'Corpus input hash mismatch' }
+          if ((Get-FileHash ./search/corpus-search.sqlite -Algorithm SHA256).Hash.ToLowerInvariant() -ne
+             'ab2be67067172e17592a4bc981b5930ee5e45e3c7c313f332f78d151f198d830') { throw 'Index input hash mismatch' }
+          dotnet run --project ./tools/CorpusSearchLatencyProbe/CorpusSearchLatencyProbe.csproj -c Release -- ./r5/Corpus/corpus.sqlite ./search/corpus-search.sqlite
+          if ($LASTEXITCODE -ne 0) { throw 'Latency probe failed' }
