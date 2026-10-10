@@ -50,14 +50,17 @@ def read_annotation(path):
             line = raw.strip()
             if not line or line.startswith("#") or line.startswith("LOCATION"):
                 continue
-            m = LOCATION.match(line)
-            if not m:
+            columns = line.split("\t")
+            location = columns[0] if columns else ""
+            m = re.fullmatch(r"\((\d+):(\d+):(\d+):(\d+)\)", location)
+            if len(columns) != 4 or not m:
                 if malformed < 5:
                     print(f"UNRECOGNIZED LINE {lineno}: {line[:180]}")
                 malformed += 1
                 continue
-            surah, ayah, position, segment = map(int, m.group(1,2,3,4))
-            form, tag, features = m.group(5,6,7)
+            surah, ayah, position, segment = map(int, m.groups())
+            _, form, tag, features = columns
+            # 208 valid suffix rows have an empty FORM; never trim tabs.
             slot = (f"{surah}:{ayah}", position)
             slots.add(slot)
             total_segments += 1
