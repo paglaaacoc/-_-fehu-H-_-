@@ -1,0 +1,5 @@
+THTRP v2.0.0 source snapshot export
+Exact private accepted v2.0.0 final UI source ref: 278aba43728393ed2ae3a925c8ce4e30e9f623bb
+All src/tools/scripts Git blob IDs were verified as equal between the private authoritative repository and this isolated CI mirror, using recursive trees.
+This export is TEMPORARY; the CI repository is currently public. The final archive must be downloaded directly by the owner and preserved privately. It will be combined with a project-wide continuity master and Windows binary.
+This does NOT contain the private repository's historical docs tree or user research Data.

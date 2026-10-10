@@ -1,0 +1,41 @@
+name: THTRP v2.0.0 source mirror export (temporary private continuity handoff)
+on:
+  push:
+    branches: [ci/v2.0.0-source-export]
+    paths: [SOURCE-EXPORT-TRIGGER.txt]
+permissions:
+  contents: read
+jobs:
+  source-snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check mirrored source tree and exclusions
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/QuranReconciliation/MainWindow.xaml
+          test -f tools/CorpusOccurrenceQueryProbe/Program.cs
+          test -f scripts/verify-v1.0-release-identity.ps1
+          test ! -e Data
+          test ! -e Backups
+          test ! -e Diagnostics
+          if grep -q 'The Holy Translation Reconciliation Project' src/QuranReconciliation/MainWindow.xaml; then
+            grep -q 'Text="v2.0.0"' src/QuranReconciliation/MainWindow.xaml
+          fi
+          echo "Mirrored app, build scripts and tests staged for offline handoff."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: THTRP-v2.0.0-Complete-App-Source-Mirror
+          path: |
+            src/
+            tools/
+            scripts/
+            .github/workflows/
+            .gitignore
+            .gitattributes
+            README.md
+            CI-R2-PRIVATE-CANDIDATE.json
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: error
