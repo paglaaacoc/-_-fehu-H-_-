@@ -101,6 +101,27 @@ jobs:
           $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($actual -ne $newHash) { throw "R2 fixture hash mismatch: $actual" }
           Write-Host 'Verified test-only change: all missing canonical fields reject explicitly; B3 runtime untouched.'
+      - name: Normalize CI-only Git checkout EOL to verified authored LF
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # GitHub Windows checkout may normalize text files to CRLF while
+          # their source SHA-256 contracts are intentionally authored on LF.
+          # Touch ONLY ci/ overlay files; NEVER the immutable B3 ZIP/source.
+          foreach ($relative in @('ci/pathfinder-s2d-b4', 'ci/pathfinder-s2d-b6-b7', 'ci/pathfinder-s2d-b8')) {
+            $dir = Join-Path $env:GITHUB_WORKSPACE $relative
+            if (-not (Test-Path -LiteralPath $dir -PathType Container)) { throw "Missing CI source: $relative" }
+            foreach ($file in @(Get-ChildItem -LiteralPath $dir -File)) {
+              if ($file.Extension -notin @('.cs', '.csproj', '.txt')) { continue }
+              $value = [IO.File]::ReadAllText($file.FullName)
+              $normalized = $value.Replace("`r`n", "`n")
+              if ($value -cne $normalized) {
+                [IO.File]::WriteAllText($file.FullName, $normalized, [Text.UTF8Encoding]::new($false))
+                Write-Host "Authored-LF restored: $relative/$($file.Name)"
+              }
+            }
+          }
+          Write-Host 'Only CI overlay text EOL normalized, native hash gates remain intact.'
       - name: Overlay and hash-verify exact B4/B5 staged sources (all lanes)
         shell: pwsh
         env:
