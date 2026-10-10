@@ -1,0 +1,107 @@
+name: THTRP Build 2.0 - C2b WinUI Search Workspace
+on:
+  push:
+    branches: [ci/build-2.0-search]
+    paths: [CI-UI-CHECKPOINT.json]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: thtrp-build20-c2b-ui
+  cancel-in-progress: true
+jobs:
+  search-workspace-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout private-source mirrored CI branch
+        uses: actions/checkout@v4
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify exact private C2b source Git blobs
+        shell: pwsh
+        run: |
+          $p = Get-Content -Raw ./CI-UI-CHECKPOINT.json | ConvertFrom-Json
+          if ($p.private_source_sha -ne 'a19c922421d49ac6bc6b2add8de18b0d9b8dbc79') { throw 'Unpinned C2b source' }
+          if ($p.r5_rollback_sha -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'R5 rollback identity changed' }
+          if (@($p.source_blob_shas.PSObject.Properties).Count -ne 19) { throw 'Expected 19 protected source Git blobs' }
+          foreach ($item in $p.source_blob_shas.PSObject.Properties) {
+            $actual = (git rev-parse "HEAD:$($item.Name)").Trim()
+            if ($LASTEXITCODE -ne 0 -or $actual -ne $item.Value) {
+              throw "Source Git blob mismatch for $($item.Name)"
+            }
+          }
+          Write-Host 'C0/C1/C2a/C2b private source provenance: 19/19 PASS'
+      - name: Retrieve original verified R5 corpus
+        uses: actions/download-artifact@v4
+        with:
+          name: The-Holy-Quran-TRP-Build-1.9-R5-win-x64
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 37973098209
+          github-token: ${{ github.token }}
+          path: ./r5-source
+      - name: Retrieve verified standalone C1 search index
+        uses: actions/download-artifact@v4
+        with:
+          name: THTRP-B20-C1-search-index-validation
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 38025181456
+          github-token: ${{ github.token }}
+          path: ./c1-source
+      - name: Stage pinned search index as build output content
+        shell: pwsh
+        run: |
+          $corpus = './r5-source/Corpus/corpus.sqlite'
+          $search = './c1-source/corpus-search.sqlite'
+          if (!(Test-Path $corpus) -or !(Test-Path $search)) { throw 'Missing pinned source inputs' }
+          if ((Get-FileHash $corpus -Algorithm SHA256).Hash.ToLowerInvariant() -ne
+              '188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862') {
+            throw 'R5 source corpus hash mismatch'
+          }
+          if ((Get-FileHash $search -Algorithm SHA256).Hash.ToLowerInvariant() -ne
+              'ab2be67067172e17592a4bc981b5930ee5e45e3c7c313f332f78d151f198d830') {
+            throw 'C1 search index hash mismatch'
+          }
+          New-Item -ItemType Directory -Force ./src/QuranReconciliation/Resources/SearchIndex | Out-Null
+          Copy-Item $search ./src/QuranReconciliation/Resources/SearchIndex/corpus-search.sqlite
+          Write-Host 'Pinned C1 search index staged in private-source-independent CI resources.'
+      - name: Compile native C2b WinUI x64 application
+        shell: pwsh
+        run: |
+          dotnet restore ./src/QuranReconciliation/QuranReconciliation.csproj -r win-x64
+          if ($LASTEXITCODE -ne 0) { throw 'WinUI restore failed' }
+          dotnet build ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --no-restore -p:SourceRevisionId=a19c922421d49ac6bc6b2add8de18b0d9b8dbc79
+          if ($LASTEXITCODE -ne 0) { throw 'WinUI compilation failed' }
+      - name: Confirm staged index is in app output and source unaffected
+        shell: pwsh
+        run: |
+          $packed = './src/QuranReconciliation/bin/Release/net10.0-windows10.0.19041.0/win-x64/Corpus/corpus-search.sqlite'
+          if (!(Test-Path $packed)) { throw 'Compiled app output omits search index' }
+          if ((Get-FileHash $packed -Algorithm SHA256).Hash.ToLowerInvariant() -ne
+              'ab2be67067172e17592a4bc981b5930ee5e45e3c7c313f332f78d151f198d830') {
+            throw 'Published resource index digest mismatch'
+          }
+          if ((Get-FileHash './r5-source/Corpus/corpus.sqlite' -Algorithm SHA256).Hash.ToLowerInvariant() -ne
+              '188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862') {
+            throw 'Canonical corpus mutated'
+          }
+          Write-Host 'C2b build includes separately verified search index: PASS'
+      - name: Verify inherited C2a query safety and multilingual contracts
+        shell: pwsh
+        run: |
+          dotnet run --project ./tools/CorpusSearchQueryProbe/CorpusSearchQueryProbe.csproj -c Release -- ./r5-source/Corpus/corpus.sqlite ./c1-source/corpus-search.sqlite
+          if ($LASTEXITCODE -ne 0) { throw 'C2a inherited query contract regression' }
+      - name: Static UI source guards
+        shell: pwsh
+        run: |
+          $xaml = Get-Content -Raw ./src/QuranReconciliation/MainWindow.xaml
+          $ui = Get-Content -Raw ./src/QuranReconciliation/MainWindow.CorpusSearch.cs
+          foreach ($tag in @('CorpusSearchWorkspaceGrid','CorpusSearchTextBox','CorpusSearchLanguageSelector','CorpusSearchScriptSelector','CorpusSearchTranslationSelector','CorpusSearchResultsList','CorpusSearchReadAyah_Click')) {
+            if (!$xaml.Contains($tag)) { throw "C2b UI marker missing: $tag" }
+          }
+          if (!$ui.Contains('NavigateToResearchTarget(')) { throw 'Search must reuse existing R5 reader navigation' }
+          if (!$ui.Contains('Task.Run(')) { throw 'Search must perform expensive work off the UI thread' }
+          if (!$ui.Contains('_corpusSearchGeneration')) { throw 'Stale-search result guard missing' }
+          Write-Host 'C2b workspace navigation and fail-closed source guards PASS'
