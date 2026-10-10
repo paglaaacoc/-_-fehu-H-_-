@@ -1,0 +1,32 @@
+{
+  "source_sha": "b2dcbea25d53c62be6bf9c3f9305272d6ee4aa07",
+  "r5_rollback": "6b54c3987934caa860094adcbc92ccf504b9342b",
+  "ci_commit_before_trigger": "a521c312f52467135c98957214dd13a279ce7a80",
+  "blobs": {
+    "src/QuranReconciliation/MainWindow.xaml": "10a344dc25c97c794e5d4d7aea45d5500f92059c",
+    "src/QuranReconciliation/MainWindow.Notes.cs": "ba692feda5bab489c0b3df02bd46159a8ec50aff",
+    "src/QuranReconciliation/Infrastructure/CorpusSearchTextNormalizer.cs": "a43743c129aa67a3e77592a7edbd0abdf1d6a627",
+    "tools/CorpusSearchIndexBuilder/CorpusSearchIndexBuilder.csproj": "c6fc7298f5afc27644b8c0344d106e3aea53f322",
+    "tools/CorpusSearchIndexBuilder/Program.cs": "14fc2687eac0e5def5e3fd817e455446c6abd152",
+    "tools/CorpusSearchIndexProbe/CorpusSearchIndexProbe.csproj": "c6fc7298f5afc27644b8c0344d106e3aea53f322",
+    "tools/CorpusSearchIndexProbe/Program.cs": "c26263788cf165a56855edf1792aa6bff1aea80d",
+    "src/QuranReconciliation/Infrastructure/CorpusSearchRepository.cs": "b31969b1fc9ec3135bfa34db83042b923f68ac81",
+    "tools/CorpusSearchQueryProbe/CorpusSearchQueryProbe.csproj": "528f3950b63209c986ed9cda7c655c730299c126",
+    "tools/CorpusSearchQueryProbe/Program.cs": "cba9db6f403eb45b79c15fb4b39a6d1c1e196615",
+    "src/QuranReconciliation/Infrastructure/AppPaths.cs": "5f3707f03ac34aa9b60059ae3b1081c71b9aad3f",
+    "src/QuranReconciliation/Infrastructure/BuildIdentity.cs": "7fa2e996cb06f23989d75e28e7a540fa24cf6451",
+    "src/QuranReconciliation/MainWindow.ContextAtlas.cs": "6c46691bba1b67287aa93479ec26f0011a80b031",
+    "src/QuranReconciliation/MainWindow.CorpusSearch.cs": "1fdc180c4aee16bd90101fb558c6ff75cbd1b792",
+    "src/QuranReconciliation/MainWindow.History.cs": "87ef4cce33df7379c40c713ce6156cfeab5ea618",
+    "src/QuranReconciliation/MainWindow.WorkingSlices.cs": "ef382e973a016150d837052a060f3312758a3625",
+    "src/QuranReconciliation/MainWindow.Workspace.cs": "c147334f1686754343503f97a2f808271c0f0c5b",
+    "src/QuranReconciliation/QuranReconciliation.csproj": "0b05a5939a183688e10a13b44699b11923d06983",
+    "tools/CorpusSearchLatencyProbe/CorpusSearchLatencyProbe.csproj": "5b8f87e0e7616645e6ecad113358b99e2c1aa231",
+    "tools/CorpusSearchLatencyProbe/Program.cs": "fe46677a8cb77e9993e74f0e6b870e5ab8e85e49"
+  },
+  "inputs": {
+    "corpus_sha256": "188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862",
+    "index_sha256": "ab2be67067172e17592a4bc981b5930ee5e45e3c7c313f332f78d151f198d830"
+  },
+  "security": "No owner data, no archive from private data; reuse R5 packaged assets and independently verified index"
+}
