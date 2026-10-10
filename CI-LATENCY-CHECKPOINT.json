@@ -1,0 +1,9 @@
+{
+  "source_sha": "b27f3d1aa7639179adf33155f27d9b70a04d1973",
+  "rollback": "6b54c3987934caa860094adcbc92ccf504b9342b",
+  "blobs": {
+    "tools/CorpusSearchLatencyProbe/CorpusSearchLatencyProbe.csproj": "5b8f87e0e7616645e6ecad113358b99e2c1aa231",
+    "tools/CorpusSearchLatencyProbe/Program.cs": "fe46677a8cb77e9993e74f0e6b870e5ab8e85e49"
+  },
+  "scope": "C2c latency only; no research writes; no corpus rebuild"
+}
