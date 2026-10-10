@@ -1,0 +1,11 @@
+{
+  "private_source": "a523bbee6b537e695660c254a0d2874aecb62462",
+  "rollback": "6b54c3987934caa860094adcbc92ccf504b9342b",
+  "blobs": {
+    "src/QuranReconciliation/Infrastructure/CorpusOccurrenceRepository.cs": "a8988e4b4d5cb89b70cd5043d08dcb30a760a0b8",
+    "tools/CorpusOccurrenceQueryProbe/CorpusOccurrenceQueryProbe.csproj": "4444626448349056cf05ef732e679ff09a8d9b52",
+    "tools/CorpusOccurrenceQueryProbe/Program.cs": "3a2372f4f5ca9a4c6046d180634ea462f16ced5e",
+    "tools/CorpusLemmaIndexBuilder/build_lemma_positions.py": "04790f27f2086a6601767ddc9fbafed9c5f2bea7"
+  },
+  "scope": "test-only derived index, no distribution"
+}
