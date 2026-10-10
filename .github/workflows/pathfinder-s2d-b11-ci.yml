@@ -325,7 +325,7 @@ jobs:
           $root=Join-Path $env:GITHUB_WORKSPACE '_pathfinder_s2d_b3_source'
           $ci=Join-Path $env:GITHUB_WORKSPACE 'ci/pathfinder-s2d-b11'
           $recipe=Join-Path $ci 'B11Overlay.py'
-          if ((git hash-object -- $recipe).Trim() -ne '33644201037ba97fc9e7a8d3f48a3202e5f9ce7a') { throw 'B11 source recipe blob changed.' }
+          if ((git hash-object -- $recipe).Trim() -ne '09275f2600407ee5830a3f98ddb1d4636b27efbd') { throw 'B11 source recipe blob changed.' }
           & python $recipe $root
           if ($LASTEXITCODE -ne 0) { throw 'B11 source recipe or expected SHA-256 failed.' }
           if ($env:PF_LANE -eq 'backup-harness') {
