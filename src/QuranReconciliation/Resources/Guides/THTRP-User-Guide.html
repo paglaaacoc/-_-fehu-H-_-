@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Holy Quran TRP — Complete Offline User Guide · Build 1.9 R5</title>
+<title>The Holy Quran TRP — Complete Offline User Guide · v2.0.0</title>
 <style>
 :root{color-scheme:light dark;font-family:"Segoe UI",system-ui,Arial,sans-serif;--bg:#f4f7fa;--paper:#fff;--ink:#152634;--muted:#526779;--line:#d9e2e9;--accent:#146794;--soft:#edf5fa}
 @media(prefers-color-scheme:dark){:root{--bg:#0d1721;--paper:#142331;--ink:#f1f5f8;--muted:#a6b7c6;--line:#344c5c;--accent:#8ad3fb;--soft:#203746}}
@@ -27,7 +27,7 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 </style>
 </head>
 <body>
-<header><h1>The Holy Quran TRP</h1><p>Complete offline user guide · Build 1.9 R5 · Windows native · The Holy Translation Reconciliation Project</p></header>
+<header><h1>The Holy Quran TRP</h1><p>Complete offline user guide · v2.0.0 · Windows native · The Holy Translation Reconciliation Project</p></header>
 <div class="shell">
 <nav aria-label="Guide contents">
 <strong>Contents</strong>
@@ -35,6 +35,7 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 <a href="#purpose">1. What this workstation is</a>
 <a href="#start">2. First-run and safe setup</a>
 <a href="#reading">3. Qur'an reading and navigation</a>
+<a href="#corpus-search">3A. Universal Corpus Search (v2.0)</a>
 <a href="#research">4. Research Context Map</a>
 <a href="#notes">5. Notes, statuses and provenance</a>
 <a href="#slices">6. Working Slices</a>
@@ -64,7 +65,7 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 <ol><li>Extract the complete Windows ZIP to a dedicated writable folder; do not run the executable from inside the compressed archive.</li>
 <li>Keep the provided <code>Corpus</code>, <code>Fonts</code> and associated application files together. Missing companion files cause incomplete or unavailable evidence.</li>
 <li>Launch <strong>The Holy Quran TRP.exe</strong>. Allow local workspace initialization to finish.</li>
-<li>Check the build label under the title. For this guide it should identify <strong>Build 1.9 R5</strong>.</li>
+<li>Check the build label under the title. For this guide it should identify <strong>v2.0.0</strong>.</li>
 <li>Choose a comfortable theme and font zoom. Review the three Arabic-script display toggles before starting.</li>
 <li>Use <strong>Data safety → Create verified backup</strong> before significant experimental changes, and keep additional backup copies outside the application folder.</li></ol>
 <p>The Windows SmartScreen warning sometimes shown for an unsigned executable concerns publisher reputation; it does not prove the application is infected or certify it is safe. Verify the ZIP's source and hash before deciding whether to run it.</p>
@@ -76,6 +77,18 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 <h3>Translations and sources</h3><p>The research workspace permits selecting appropriate translation and tafsir/source resources. For structural boundary research, keep the controlling Arabic evidence clear and distinguish a translation's wording from the Arabic. Some legacy records include source footnotes: read these with the verse rather than treating them as separate Ayat.</p>
 </section>
 
+<section id="corpus-search"><h2>3A. Universal Corpus Search — v2.0.0</h2>
+<p><strong>Corpus Search</strong> is the local, read-only Qur'an evidence workspace. It searches verified canonical Arabic across Uthmani, IndoPak and IndoPak Nastaleeq, plus the bundled English and Bengali translation sources. Tafsir is <strong>not</strong> searched. Open it from the workspace navigation or use <code>Ctrl+F</code> outside workspaces that own their own local Find behavior.</p>
+<table><tr><th>Search method</th><th>What a result means</th></tr>
+<tr><td>Text — literal &amp; normalized</td><td>Exact source-text fragments, with separately labelled orthographic/diacritic-normalized matches when enabled. Choose language, Arabic script and translation source as applicable. Normalized results are <em>not</em> source-verbatim identical strings.</td></tr>
+<tr><td>Verified Arabic lemma</td><td>Whole Arabic word forms indexed using the source-attributed Quranic Arabic Corpus morphology annotations, including grammatical-part-of-speech disambiguation. Reports individual word-position occurrences separately from distinct Ayat. Not an unrestricted root, semantic or fuzzy search.</td></tr>
+<tr><td>Exact Uthmani word sequence</td><td>One to eight adjacent complete canonical Uthmani word tokens, without approximate morphological or semantic expansion.</td></tr>
+<tr><td>Identical complete Ayah</td><td>Enter a canonical reference such as <code>2:5</code>; only Ayat whose <em>entire</em> text is exactly identical in the selected Arabic script are returned. Different verse numbers are expected when the entire text repeats. Numeric prefixes (for example 2:2 → 2:20) are <strong>not</strong> matches.</td></tr></table>
+<p><strong>Quick references:</strong> In Identical complete Ayah mode, entering <code>2</code> displays a short, read-only Surah Al-Baqarah summary; <code>2:</code> prompts for an Ayah; a completed <code>2:20</code> runs the actual identical-full-Ayah comparison. You can choose <strong>View first Ayah (read-only)</strong> from a Surah summary.</p>
+<p><strong>Read-only Ayah preview:</strong> Select <strong>View Ayah</strong> on any result to view the original three Arabic scripts and the default English/Bengali translations. The collapsed <strong>Change translation sources (optional)</strong> area lets you independently change English and Bengali sources for that preview, without changing matching counts or persisting the choices. <strong>Open in Research</strong> is an explicit, separate navigation action. Closing the preview leaves Search state intact.</p>
+<p><strong>Evidence and safety:</strong> Search indexes and Quranic Arabic Corpus morphology files are separate, verified, immutable portable files. Personal Research, drafts and Context segmentation are not written by Search. If a required index is missing or fails its expected digest, search fails closed rather than returning unverified results. Arabic lemma/positional matching and complete-Ayah identity answer different questions; do not mix their reported counts.</p>
+</section>
+
 <section id="research"><h2>4. Research Context Map</h2>
 <p>The editable Context Map organizes a Surah into consecutive research passages. A Context Block represents Ayat that should normally be studied together to understand the same immediate discourse. Research boundaries are editable; they are distinct from fixed Surah and Juz divisions.</p>
 <ol><li>Choose a Surah and inspect its current Context Block list.</li><li>Select the passage you wish to work on; confirm its start and end Ayat in the source text.</li><li>When evidence supports it, use the existing Context Map controls to split or merge passages. Do not split merely to fit a preferred length.</li><li>Update status and notes to record why you made a decision, rather than relying on a label alone.</li><li>Review the resulting passage adjacency and any affected Working Slices. Take a verified backup before large structural edits.</li></ol>
@@ -84,7 +97,7 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 </section>
 
 <section id="notes"><h2>5. Notes, statuses and provenance</h2>
-<p>Ayah notes, Context notes and their revisions are persistent parts of your research. Select the correct Ayah or Context before editing. Use each note to record interpretive questions, source comparisons and the reasoning behind a boundary or translation choice. Apply status labels consistently; a status should represent <em>your</em> actual level of review, not an AI model's confidence.</p>
+<p>Ayah notes, Context notes and their revisions are persistent parts of your research. The known N01 convenience limitation may require manually opening the right-sidebar <strong>Activity &amp; notes</strong> parent and then <strong>Ayah Note</strong> after clicking the reader's Note button; the underlying note storage and save/revision workflow are separate and remain supported. Select the correct Ayah or Context before editing. Use each note to record interpretive questions, source comparisons and the reasoning behind a boundary or translation choice. Apply status labels consistently; a status should represent <em>your</em> actual level of review, not an AI model's confidence.</p>
 <p>Where the interface marks unsaved or dirty state, your edits are retained under their original Ayah/Context identity across routine navigation and can be restored as recoverable drafts after restarting. They are not canonical until you explicitly Save. History contains saved prior work and timestamps; the Context Atlas sidebar deliberately provides <em>read-only snapshots</em> rather than a second editor.</p>
 </section>
 
@@ -111,25 +124,25 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 <p><strong>Read Ayat</strong> is available from many Atlas results. It opens local Qur'an evidence without creating a Working Slice, changing segmentation or writing notes.</p>
 </section>
 
-<section id="compare"><h2>9. Comparing Context proposals — Build 1.9 R5</h2>
+<section id="compare"><h2>9. Comparing Context proposals — v2.0.0</h2>
 <ol><li>Import a second validated Proposal Corpus or choose any two already available corpora.</li><li>Open <strong>Context Atlas → Compare</strong> and choose <strong>Corpus A</strong> and <strong>Corpus B</strong>.</li><li>Use the Surah list to focus the comparison. The overview reports shared, A-only and B-only boundaries and exact matching fine ranges.</li><li>Use <strong>Previous difference</strong> and <strong>Next difference</strong> to inspect one disputed Ayah transition at a time.</li><li>Read the actual Contexts containing the Ayah before and after the transition, their coherence notes, boundary reasons and Macro Group labels side by side.</li><li>Choose <strong>Read Ayat side by side</strong> (or <strong>Read A/B Ayat</strong> from either column) to open two independently scrollable canonical Arabic readers. Each follows its own corpus's actual Context boundaries, while marking the disputed Ayah transition in both.</li><li>Optionally select one English or Bengali translation for both panes; the sources, zoom and Arabic-script controls apply consistently. Choose <strong>Back to Compare</strong> without altering research state.</li><li>Use <strong>Ayah Evidence</strong> or <strong>Pin Context</strong> for closer analysis.</li></ol>
 <p><strong>Session restoration:</strong> when you switch from Context Atlas to Research, Working Slices, History, or another app workspace and return during the same launch, Atlas keeps the selected tab, Corpus A/B choices, Surah, disagreement and reading/scroll position. Pins remain session-only. Explicitly importing or removing a corpus refreshes the list; a removed corpus cannot be restored and receives a safe fallback.</p>
 <p>An <strong>A-only boundary</strong> means Corpus A separates Ayat at that position while B keeps them within one fine Context. A <strong>B-only boundary</strong> means the reverse. Neither is automatically right. The comparison is aligned by Ayah reference, <em>not</em> by Context Block ordinal number: Context 3 in one corpus need not correspond to Context 3 in another.</p>
 <div class="callout">Compare is for <strong>evaluation</strong>, never automatic reconciliation. It does not promote either AI proposal into editable owner research.</div>
 </section>
 
-<section id="pins"><h2>10. Pin &amp; Compare — Build 1.9 R5</h2>
+<section id="pins"><h2>10. Pin &amp; Compare — v2.0.0</h2>
 <p>Use <strong>Pin</strong> from an Atlas Context card, <strong>Pin Context</strong> from Compare, or <strong>Pin this Ayah</strong> from an open Read Ayat preview. Pins form a temporary list that can contain passages from several Surahs.</p>
 <p>Open the <strong>Pins</strong> tab. Select any stored passage as <strong>A</strong> and another as <strong>B</strong>. The pinned comparison shows bounded local Uthmani Arabic evidence for up to the first three Ayat of each passage. Use <strong>Read full passage</strong> for a long Context. You can remove a pin or clear the session tray. There is a safety cap of 40 entries.</p>
 <p><strong>Nothing in Pins is saved to research.sqlite</strong>. Pins are intentionally discarded after you close the application. Do not use this tray as a substitute for durable notes, Working Slices or bookmarks.</p>
 </section>
 
-<section id="evidence"><h2>11. Ayah Evidence — Build 1.9 R5</h2>
+<section id="evidence"><h2>11. Ayah Evidence — v2.0.0</h2>
 <p>From Read Ayat or a Compare disagreement, select <strong>Ayah Evidence</strong> for an individual Ayah. This opens a read-only window containing existing local word-by-word positions, Arabic words, transliterations and English word meanings, plus research Context overlap, note counts and Working Slice references where available.</p>
 <p>The evidence view uses the existing local word-by-word database and a SELECT-only summary of your research database. It neither edits notes nor assumes a proposed Context is correct. Word meanings and transliterations are reference aids, not substitutes for interpreting the Arabic sentence and larger discourse.</p>
 </section>
 
-<section id="surround"><h2>12. Read in surrounding Context — Build 1.9 R5</h2>
+<section id="surround"><h2>12. Read in surrounding Context — v2.0.0</h2>
 <p>While Read Ayat is open, select <strong>Show up to 3 Ayat before and after (outside selected Context)</strong> to view neighboring evidence at the passage boundary. The feature automatically stops at a Surah edge. Surrounding Ayat use a different background and display an explicit <strong>Outside selected Context</strong> label.</p>
 <p>These neighboring Ayat remain outside the selected proposal block. Their presence does not redefine the Context boundary or affect saved research. Uncheck the option to return to the selected passage alone. The preview remains lazy and its translation-source selectors can still be used.</p>
 </section>
@@ -200,7 +213,7 @@ footer{margin-top:50px;font-size:.85rem;color:var(--muted)}
 <tr><td>Provenance</td><td>Identity, date, source and revision information explaining where research or a proposal came from.</td></tr>
 <tr><td>Verified backup</td><td>Protected snapshot intended to preserve owner research state.</td></tr></table>
 </section>
-<footer>Guide version: Build 1.9 R5 development documentation · UNACCEPTED. This guide is bundled locally with the executable and contains no external scripts, images, analytics, or network dependencies. If an owner-test changes feature labels, update this guide before accepting the build.</footer>
+<footer>Guide version: v2.0.0 Personal Stable release documentation · release-candidate validation pending. This guide is bundled locally with the executable and contains no external scripts, images, analytics, or network dependencies. Keep the accepted application source and a verified release archive together for offline recovery.</footer>
 </main></div>
 <script>
 function searchGuide(query){

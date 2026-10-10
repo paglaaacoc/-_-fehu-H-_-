@@ -1,5 +1,5 @@
 {
-  "source_sha": "733352de244f3070033b32bc9ad47356828d8cd8",
+  "source_sha": "333e19666eede451b16cb572d4df9cc3ae18a307",
   "r5_sha": "6b54c3987934caa860094adcbc92ccf504b9342b",
   "blobs": {
     "src/QuranReconciliation/MainWindow.xaml": "435caef88b9c6a51bf7795e8dde0b1bacf66a677",
@@ -8,15 +8,17 @@
     "src/QuranReconciliation/MainWindow.CorpusOccurrences.cs": "906bfb00a2b3e17bc2dd8f0bcf8b6bb0a880237d",
     "src/QuranReconciliation/Infrastructure/CorpusOccurrenceRepository.cs": "785833a63594762d63723ec8f7b78afab7fc560d",
     "src/QuranReconciliation/Infrastructure/AppPaths.cs": "60efb44b38107a0955fa1c7c1d511817db085404",
-    "src/QuranReconciliation/QuranReconciliation.csproj": "931605b98b9c10891eec7442bc564c7ec0b258f6",
+    "src/QuranReconciliation/QuranReconciliation.csproj": "6eb1f811f4b51e98f7deabb791d0642897f706c4",
     "src/QuranReconciliation/Resources/SearchIndex/QAC-MORPHOLOGY-ATTRIBUTION.md": "45d55235692a212328210e7c93814f55a89a5f30",
-    "src/QuranReconciliation/Infrastructure/BuildIdentity.cs": "68f6d15c6bd28375c716e6654d11fd96715f5652",
+    "src/QuranReconciliation/Infrastructure/BuildIdentity.cs": "07404757354f85c02c6dbcc3d5c65f876e3b3052",
     "tools/CorpusOccurrenceQueryProbe/Program.cs": "af153b676696ed858967477e0b006af882d61630",
     "tools/CorpusOccurrenceQueryProbe/CorpusOccurrenceQueryProbe.csproj": "4444626448349056cf05ef732e679ff09a8d9b52",
     "tools/CorpusLemmaIndexBuilder/build_lemma_positions.py": "04790f27f2086a6601767ddc9fbafed9c5f2bea7",
     "tools/CorpusLemmaAlignmentProbe/validate_lemma_alignment.py": "4d3f61d83fbc91acb5d89115155e1101839ef54f",
     "src/QuranReconciliation/Infrastructure/CorpusSearchRepository.cs": "b31969b1fc9ec3135bfa34db83042b923f68ac81",
-    "src/QuranReconciliation/Infrastructure/CorpusSearchTextNormalizer.cs": "a43743c129aa67a3e77592a7edbd0abdf1d6a627"
+    "src/QuranReconciliation/Infrastructure/CorpusSearchTextNormalizer.cs": "a43743c129aa67a3e77592a7edbd0abdf1d6a627",
+    "src/QuranReconciliation/MainWindow.Notes.cs": "8125b374445404d4c3aa732a9d56d5d002b75644",
+    "src/QuranReconciliation/Resources/Guides/THTRP-User-Guide.html": "dfe022acb531238365019984a5bee51883df08aa"
   },
-  "scope": "private personal Windows x64 owner-test candidate; exact source and QAC provenance"
+  "scope": "v2.0.0 Personal Stable candidate (owner acceptance pending): audited identity+offline guide, restore original N01 handler; private portable x64"
 }
