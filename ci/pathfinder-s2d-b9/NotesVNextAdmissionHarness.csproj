@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
+ <ItemGroup>
+  <Compile Include="../../src/NivareQ.Step2Pathfinder/Services/NotesVNextMutationCoordinatorV1.cs" Link="NotesVNextMutationCoordinatorV1.cs" />
+  <Compile Include="../../src/NivareQ.Step2Pathfinder/Services/NotesVNextWriterAdmissionV1.cs" Link="NotesVNextWriterAdmissionV1.cs" />
+ </ItemGroup>
+</Project>
