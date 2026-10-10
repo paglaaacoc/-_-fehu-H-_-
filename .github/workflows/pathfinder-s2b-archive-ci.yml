@@ -76,6 +76,30 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Compile and run native .NET 10 NotesStore staging harness
+        if: matrix.lane == 'notes-harness'
+        working-directory: ./_pathfinder_s2b_source
+        shell: pwsh
+        run: dotnet run -c Release --project tests/NotesStoreHarness/NotesStoreHarness.csproj
+
+
+      - name: Windows-only Python smoke cleanup fix (temporary extracted test, source ZIP unchanged)
+        if: matrix.lane == 'notes-harness'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $file = Join-Path $env:GITHUB_WORKSPACE '_pathfinder_s2b_source/tools/s2b_contract_smoke.py'
+          $expected = '22dc098042c88ec7bc06f090ff99108a78e5a6572325c44829daf8651157df6c'
+          $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $expected) { throw "Unrecognized smoke test source: $actual" }
+          $source = [IO.File]::ReadAllText($file)
+          $needle = "    assert db.execute('PRAGMA foreign_key_check').fetchall()==[]"
+          if ([regex]::Matches($source, [regex]::Escape($needle)).Count -ne 1) { throw 'Smoke-test cleanup anchor missing or ambiguous' }
+          $source = $source.Replace($needle, "$needle`n    db.close()")
+          [IO.File]::WriteAllText($file, $source, [Text.UTF8Encoding]::new($false))
+          Write-Host 'CI-only test cleanup applied: close sqlite connection before TemporaryDirectory disposal. Application and R5 archive unchanged.'
+
+
       - name: Run Notes protocol and portable contract checks
         if: matrix.lane == 'notes-harness'
         working-directory: ./_pathfinder_s2b_source
@@ -93,12 +117,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python tools/s2b_r5_release_fence.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Compile and run native .NET 10 NotesStore staging harness
-        if: matrix.lane == 'notes-harness'
-        working-directory: ./_pathfinder_s2b_source
-        shell: pwsh
-        run: dotnet run -c Release --project tests/NotesStoreHarness/NotesStoreHarness.csproj
 
       - name: Restore WinUI native project (no package)
         if: matrix.lane != 'notes-harness'
