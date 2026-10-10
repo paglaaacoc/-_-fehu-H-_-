@@ -99,8 +99,11 @@ jobs:
             if ($count -ne 1) { throw "Missing or duplicated exact C# harness anchor: $needle (count $count)" }
             $source = $source.Replace($needle, [string]$pairs[$key])
           }
+          $expectedReject = 'or FileNotFoundException)'
+          if ([regex]::Matches($source, [regex]::Escape($expectedReject)).Count -ne 1) { throw 'Missing exact expected-failure exception guard' }
+          $source = $source.Replace($expectedReject, 'or FileNotFoundException or KeyNotFoundException)')
           [IO.File]::WriteAllText($file, $source, [Text.UTF8Encoding]::new($false))
-          Write-Host 'Runner-only R5 harness CS9007 fix applied. Immutable R5 ZIP and application source not modified.'
+          Write-Host 'Runner-only R5 harness CS9007 and expected missing-page exception fixes applied. Immutable R5 ZIP and application source not modified.'
 
       - name: Compile and run native .NET 10 NotesStore staging harness
         if: matrix.lane == 'notes-harness'
