@@ -1,12 +1,12 @@
 {
-  "private_source": "ebfc48cff8a5934105a2095521f8ac0319d62ca0",
+  "private_source": "9bbbea3e7a2e5bb4e5a0ad566ca432cffc581b25",
   "rollback": "6b54c3987934caa860094adcbc92ccf504b9342b",
   "source_blobs": {
-    "tools/CorpusLemmaIndexBuilder/build_lemma_positions.py": "2b100f5e1da9223a781b8b34da8243d97d30c196",
+    "tools/CorpusLemmaIndexBuilder/build_lemma_positions.py": "90ef7185cd5382743000878930a301a5e24c6d4e",
     "tools/CorpusLemmaIndexBuilder/probe_count_queries.py": "a367c9b14daf2f8596e8fe20055e09144c3ea7d1"
   },
   "gate": "validation-only",
   "license": "QAC GPL annotations NOT packaged in application; no derived data uploaded",
-  "retry": "header row skip only; strict data rows unchanged",
-  "previous_ci_run": 38048187091
+  "retry": "correct safety membership check uses both verse key AND position",
+  "previous_ci_run": 38048270822
 }
