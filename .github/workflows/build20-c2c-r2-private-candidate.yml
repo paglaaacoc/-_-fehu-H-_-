@@ -1,0 +1,131 @@
+name: THTRP Build 2.0 C2c R2 R1 - Private Owner Candidate
+on:
+  push:
+    branches: [ci/build-2.0-search]
+    paths: [CI-R2-PRIVATE-CANDIDATE.json]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  private-owner-windows:
+    runs-on: windows-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify all exact private C2c R2 R1 source blobs
+        shell: pwsh
+        run: |
+          $m=Get-Content -Raw ./CI-R2-PRIVATE-CANDIDATE.json | ConvertFrom-Json
+          if ($m.source_sha -ne 'ed3cdaabe53773ef58ca0443c590d879b4ba91b9') { throw 'Private source ref mismatch' }
+          if ($m.r5_sha -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'R5 rollback ref mismatch' }
+          foreach($item in $m.blobs.PSObject.Properties) {
+            $actual=(git rev-parse "HEAD:$($item.Name)").Trim()
+            if($LASTEXITCODE -ne 0 -or $actual -ne $item.Value) { throw "Private Git blob mismatch: $($item.Name)" }
+          }
+          Write-Host 'Exact private R2 source mirror contract PASS'
+      - name: Download frozen owner-tested R5 canonical assets
+        uses: actions/download-artifact@v4
+        with:
+          name: The-Holy-Quran-TRP-Build-1.9-R5-win-x64
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 37973098209
+          github-token: ${{ github.token }}
+          path: ./r5
+      - name: Download frozen derived C1 text-search index
+        uses: actions/download-artifact@v4
+        with:
+          name: THTRP-B20-C1-search-index-validation
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 38025181456
+          github-token: ${{ github.token }}
+          path: ./search
+      - name: Materialize exact pinned QAC v0.4 original annotation from Git
+        shell: pwsh
+        run: |
+          git clone --no-checkout --filter=blob:none --quiet https://github.com/taziksh/quran-frequencies.git ./qac-upstream
+          if($LASTEXITCODE -ne 0) { throw 'Cannot retrieve source annotation' }
+          python -c "import pathlib,subprocess; d=subprocess.run(['git','-C','qac-upstream','cat-file','blob','b91cec6e95d5e0306550b4aedacc7380dc71152a'], stdout=subprocess.PIPE,check=True).stdout;pathlib.Path('qac-v0.4.txt').write_bytes(d)"
+          if($LASTEXITCODE -ne 0 -or (git hash-object --no-filters ./qac-v0.4.txt).Trim() -ne 'b91cec6e95d5e0306550b4aedacc7380dc71152a') { throw 'Pinned QAC source blob changed' }
+      - name: Rebuild and stage source-aligned R2 lemma index for private personal use
+        shell: pwsh
+        run: |
+          if((Get-FileHash ./r5/Corpus/corpus.sqlite -Algorithm SHA256).Hash.ToLowerInvariant() -ne '188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862') { throw 'Canonical corpus input mismatch' }
+          if((Get-FileHash ./r5/Corpus/word-by-word.sqlite -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'd119f2f113e916a9968f7275f87d31f1f8027ddcf2a5b1ff80e60b7c1b122a31') { throw 'Word-by-word input mismatch' }
+          if((Get-FileHash ./search/corpus-search.sqlite -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'ab2be67067172e17592a4bc981b5930ee5e45e3c7c313f332f78d151f198d830') { throw 'C1 index input mismatch' }
+          New-Item -ItemType Directory -Force ./src/QuranReconciliation/Resources/SearchIndex | Out-Null
+          Copy-Item ./search/corpus-search.sqlite ./src/QuranReconciliation/Resources/SearchIndex/corpus-search.sqlite -Force
+          python ./tools/CorpusLemmaIndexBuilder/build_lemma_positions.py --annotation ./qac-v0.4.txt --corpus ./r5/Corpus/corpus.sqlite --word-by-word ./r5/Corpus/word-by-word.sqlite --output ./src/QuranReconciliation/Resources/SearchIndex/corpus-lemma-positions.sqlite
+          if($LASTEXITCODE -ne 0) { throw 'Lemma index rebuild failed' }
+          if((Get-FileHash ./src/QuranReconciliation/Resources/SearchIndex/corpus-lemma-positions.sqlite -Algorithm SHA256).Hash.ToLowerInvariant() -ne '96ed3f4c1a761ffa7e9be4018fa0c191fe08e20cd11270ca79c6bba599262c2d') { throw 'Derived index digest not reproducible' }
+      - name: Run both search engines and occurrence regression contracts
+        shell: pwsh
+        run: |
+          dotnet run --project ./tools/CorpusSearchQueryProbe/CorpusSearchQueryProbe.csproj -c Release -- ./r5/Corpus/corpus.sqlite ./search/corpus-search.sqlite
+          if($LASTEXITCODE -ne 0) { throw 'Legacy exact/normalized text search regressed' }
+          dotnet run --project ./tools/CorpusOccurrenceQueryProbe/CorpusOccurrenceQueryProbe.csproj -c Release -- ./r5/Corpus/corpus.sqlite ./r5/Corpus/word-by-word.sqlite ./src/QuranReconciliation/Resources/SearchIndex/corpus-lemma-positions.sqlite
+          if($LASTEXITCODE -ne 0) { throw 'R2 verified lemma/phrase/full-Ayah query regressed' }
+      - name: Publish self-contained private x64 owner-test workstation
+        shell: pwsh
+        run: |
+          dotnet publish ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true -p:WindowsPackageType=None -p:SourceRevisionId=ed3cdaabe53773ef58ca0443c590d879b4ba91b9 -o ./artifacts/THTRP-Build-2.0-C2c-R2-R1-win-x64
+          if($LASTEXITCODE -ne 0) { throw 'WinUI private owner candidate publish failed' }
+      - name: Merge immutable R5 portable assets and include QAC source attribution
+        shell: pwsh
+        run: |
+          $root='./artifacts/THTRP-Build-2.0-C2c-R2-R1-win-x64'
+          New-Item -ItemType Directory -Force (Join-Path $root 'Corpus') | Out-Null
+          New-Item -ItemType Directory -Force (Join-Path $root 'Fonts') | Out-Null
+          Copy-Item ./r5/Corpus/* (Join-Path $root 'Corpus') -Recurse -Force
+          Copy-Item ./r5/Fonts/* (Join-Path $root 'Fonts') -Recurse -Force
+          New-Item -ItemType Directory -Force (Join-Path $root 'Sources/QAC') | Out-Null
+          Copy-Item ./qac-v0.4.txt (Join-Path $root 'Sources/QAC/quranic-corpus-morphology-0.4.txt')
+          Copy-Item ./tools/CorpusLemmaIndexBuilder/build_lemma_positions.py (Join-Path $root 'Sources/QAC/build_lemma_positions.py')
+          foreach($name in @('The Holy Quran TRP.exe','Corpus/corpus.sqlite','Corpus/word-by-word.sqlite','Corpus/corpus-search.sqlite','Corpus/corpus-lemma-positions.sqlite','Corpus/QAC-MORPHOLOGY-ATTRIBUTION.md','Corpus/juz-map.json','Fonts/UthmanicHafs1Ver18.ttf','Guides/THTRP-User-Guide.html','Sources/QAC/quranic-corpus-morphology-0.4.txt')) {
+            if(!(Test-Path (Join-Path $root $name))) { throw "Missing portable source or app asset: $name" }
+          }
+          $hashes=@{
+            'Corpus/corpus.sqlite'='188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862'
+            'Corpus/word-by-word.sqlite'='d119f2f113e916a9968f7275f87d31f1f8027ddcf2a5b1ff80e60b7c1b122a31'
+            'Corpus/corpus-search.sqlite'='ab2be67067172e17592a4bc981b5930ee5e45e3c7c313f332f78d151f198d830'
+            'Corpus/corpus-lemma-positions.sqlite'='96ed3f4c1a761ffa7e9be4018fa0c191fe08e20cd11270ca79c6bba599262c2d'
+          }
+          foreach($entry in $hashes.GetEnumerator()) {
+            if((Get-FileHash (Join-Path $root $entry.Key) -Algorithm SHA256).Hash.ToLowerInvariant() -ne $entry.Value) { throw "Packaged pinned asset hash changed: $($entry.Key)" }
+          }
+          if(Test-Path (Join-Path $root 'Data')) { throw 'Owner Data folder accidentally included' }
+          if(Test-Path (Join-Path $root 'Backups')) { throw 'Owner Backups accidentally included' }
+          Write-Host 'Self-contained private x64 package, canonical sources and QAC attribution PASS'
+      - name: Start native WinUI GUI from original and relocated portable folders
+        shell: pwsh
+        run: |
+          $root=(Resolve-Path ./artifacts/THTRP-Build-2.0-C2c-R2-R1-win-x64).Path
+          $copy=Join-Path $env:RUNNER_TEMP 'THTRP-R2-relocated'
+          Copy-Item $root $copy -Recurse -Force
+          foreach($dir in @($root,$copy)) {
+            $proc=Start-Process -FilePath (Join-Path $dir 'The Holy Quran TRP.exe') -WorkingDirectory $dir -PassThru
+            $deadline=(Get-Date).AddSeconds(45)
+            do {
+              Start-Sleep -Milliseconds 500
+              $proc.Refresh()
+              if($proc.HasExited) { throw "Native GUI terminated during startup from $dir" }
+            } while($proc.MainWindowHandle -eq [IntPtr]::Zero -and (Get-Date) -lt $deadline)
+            if($proc.MainWindowHandle -eq [IntPtr]::Zero) {
+              Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+              throw "No native WinUI main window at $dir"
+            }
+            Stop-Process -Id $proc.Id -Force
+            Remove-Item (Join-Path $dir 'Data') -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item (Join-Path $dir 'Backups') -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item (Join-Path $dir 'Diagnostics') -Recurse -Force -ErrorAction SilentlyContinue
+          }
+          Remove-Item $copy -Recurse -Force
+          Write-Host 'R2 private owner build native WinUI launch / folder relocation PASS'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: The-Holy-Quran-TRP-Build-2.0-C2c-R2-R1-win-x64
+          path: artifacts/THTRP-Build-2.0-C2c-R2-R1-win-x64/
+          retention-days: 7
+          if-no-files-found: error
