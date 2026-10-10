@@ -109,7 +109,14 @@ public sealed partial class MainWindow
         }
 
         SelectAyahNoteTarget(_currentSurah, ayah);
+        // An explicit Note action must reveal both nested panels, even when
+        // the parent was previously collapsed by the owner.
+        ActivityNotesExpander.IsExpanded = true;
         AyahNoteExpander.IsExpanded = true;
+        // Defer scroll until the expanded sidebar has been laid out. This
+        // targets only the right sidebar; it does not reposition the reader.
+        _ = DispatcherQueue.TryEnqueue(() =>
+            AyahNoteExpander.StartBringIntoView());
 
         ResearchNote? saved =
             _notes.GetAyahNote(_currentSurah, ayah);

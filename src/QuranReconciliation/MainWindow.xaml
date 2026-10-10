@@ -394,7 +394,8 @@
                             </StackPanel>
                         </Expander>
 
-                        <Expander Header="Activity &amp; notes"
+                        <Expander x:Name="ActivityNotesExpander"
+                                  Header="Activity &amp; notes"
                                   IsExpanded="False"
                                   Margin="2,8,2,0">
                             <StackPanel Spacing="7"
