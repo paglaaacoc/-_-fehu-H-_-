@@ -112,7 +112,7 @@ jobs:
       - name: Verify release identity and bundled guide
         shell: pwsh
         run: |
-          $root='./artifacts/THTRP-v2.0.0-RC1-win-x64'
+          $root='./artifacts/THTRP-Build-2.0-v2.0.0-RC1-win-x64'
           $guide=Join-Path $root 'Guides/THTRP-User-Guide.html'
           if(!(Test-Path $guide)) { throw 'Bundled release user guide missing' }
           $html=Get-Content -Raw $guide

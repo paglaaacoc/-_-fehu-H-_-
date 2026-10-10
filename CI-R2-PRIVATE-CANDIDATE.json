@@ -20,5 +20,7 @@
     "src/QuranReconciliation/MainWindow.Notes.cs": "8125b374445404d4c3aa732a9d56d5d002b75644",
     "src/QuranReconciliation/Resources/Guides/THTRP-User-Guide.html": "dfe022acb531238365019984a5bee51883df08aa"
   },
-  "scope": "v2.0.0 Personal Stable candidate (owner acceptance pending): audited identity+offline guide, restore original N01 handler; private portable x64"
+  "scope": "v2.0.0 Personal Stable candidate (owner acceptance pending): audited identity+offline guide, restore original N01 handler; private portable x64",
+  "ci_attempt": 2,
+  "ci_only_correction": "Align release identity verification folder to existing publish output path. Application source unchanged."
 }
