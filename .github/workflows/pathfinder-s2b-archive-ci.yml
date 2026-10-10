@@ -82,7 +82,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $file = Join-Path $env:GITHUB_WORKSPACE '_pathfinder_s2b_source/tests/NotesStoreHarness/Program.cs'
-          $expected = '6b6614d3c96623827846cb8e84fb6cda0c5549fe03df10a617d7ec7fd4fee9e1'
+          $expected = 'b73a1244449de7d11dfa0a2e0fbd8352fe1990941583947be6d005e1cc8c1433'
           $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($actual -ne $expected) { throw "Unexpected C# test harness hash $actual; refusing runner-only correction" }
           $source = [IO.File]::ReadAllText($file)
