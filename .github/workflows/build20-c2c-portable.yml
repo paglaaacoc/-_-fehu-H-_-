@@ -61,8 +61,10 @@ jobs:
         shell: pwsh
         run: |
           $root='./artifacts/THTRP-Build-2.0-C2c-R1-win-x64'
-          Copy-Item ./r5-baseline/Corpus $root/Corpus -Recurse -Force
-          Copy-Item ./r5-baseline/Fonts $root/Fonts -Recurse -Force
+          New-Item -ItemType Directory -Force (Join-Path $root 'Corpus') | Out-Null
+          New-Item -ItemType Directory -Force (Join-Path $root 'Fonts') | Out-Null
+          Copy-Item ./r5-baseline/Corpus/* (Join-Path $root 'Corpus') -Recurse -Force
+          Copy-Item ./r5-baseline/Fonts/* (Join-Path $root 'Fonts') -Recurse -Force
           foreach ($p in @('The Holy Quran TRP.exe','Corpus/corpus.sqlite','Corpus/corpus-search.sqlite','Corpus/word-by-word.sqlite','Corpus/juz-map.json','Guides/THTRP-User-Guide.html','Assets/QuranReconciliation.ico','Fonts/UthmanicHafs1Ver18.ttf','Fonts/indopak-nastaleeq-waqf-lazim-v4.2.1.ttf')) {
             if (!(Test-Path (Join-Path $root $p))) { throw "Portable asset missing $p" }
           }
