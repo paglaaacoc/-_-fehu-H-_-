@@ -48,7 +48,7 @@ jobs:
           $overlays = @(
             @('NotesWebMessageBridgeV1.cs', 'cf6cb0e18db84fa75dcc149f756fcdc4377491828e12071690967b669e501c91', 'src/NivareQ.Step2Pathfinder/Services/NotesWebMessageBridgeV1.cs'),
             @('NotesWireHarness.csproj', '58de4ec6a7de954bfa8d06f5bb004f26f712ae5cebbce238c20ea9fd7e5f9377', 'tests/NotesWireHarness/NotesWireHarness.csproj'),
-            @('Program.cs', '7b8e1aaea1457942b86312adbf5c37f58d903905a8ca1b3fabea71fa85846ca9', 'tests/NotesWireHarness/Program.cs')
+            @('Program.cs', '5608efd6dbc68be8351bcbbf5a696f1244e947e70229b4688d4dc92208af551e', 'tests/NotesWireHarness/Program.cs')
           )
           foreach ($entry in $overlays) {
             $overlay = Join-Path $root ('ci/s2b-r7/' + $entry[0])
