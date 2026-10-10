@@ -1,9 +1,19 @@
 {
-  "kind": "disposable_fast_winui_validation",
-  "private_source_sha": "6b54c3987934caa860094adcbc92ccf504b9342b",
-  "accepted_base_sha": "8a91a786f4df2d0c0b60d92cc781451e98fe6b0b",
-  "test_focus": "Final R5 native compile and standalone safety, research, draft recovery contracts including note-baseline behavior",
-  "owner_acceptance": "PENDING",
-  "research_data": "SYNTHETIC ONLY",
-  "preceding_fast_run": "37972250539 success"
+  "kind": "build2.0_C0_C1_focused_windows_ci",
+  "private_source_sha": "c1493ffb994fb389705c26b6e63403d414d5bacc",
+  "r5_rollback_sha": "6b54c3987934caa860094adcbc92ccf504b9342b",
+  "accepted_1_8_sha": "8a91a786f4df2d0c0b60d92cc781451e98fe6b0b",
+  "source_blob_shas": {
+    "src/QuranReconciliation/MainWindow.xaml": "350d993730860326d9ad166dfb4e6d2f420559fb",
+    "src/QuranReconciliation/MainWindow.Notes.cs": "ba692feda5bab489c0b3df02bd46159a8ec50aff",
+    "src/QuranReconciliation/Infrastructure/CorpusSearchTextNormalizer.cs": "a43743c129aa67a3e77592a7edbd0abdf1d6a627",
+    "tools/CorpusSearchIndexBuilder/CorpusSearchIndexBuilder.csproj": "c6fc7298f5afc27644b8c0344d106e3aea53f322",
+    "tools/CorpusSearchIndexBuilder/Program.cs": "5249d5c02da07736d7b8dbf7c18783ab169599b1",
+    "tools/CorpusSearchIndexProbe/CorpusSearchIndexProbe.csproj": "c6fc7298f5afc27644b8c0344d106e3aea53f322",
+    "tools/CorpusSearchIndexProbe/Program.cs": "c26263788cf165a56855edf1792aa6bff1aea80d"
+  },
+  "source_artifact_run": 37973098209,
+  "expected_corpus_sha256": "188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862",
+  "research_data": "NO OWNER DATA; PINNED ACCEPTED CORPUS ONLY",
+  "purpose": "Native C0 compile and C1 read-only search-index build with golden probe"
 }
