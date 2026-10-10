@@ -1,0 +1,76 @@
+name: THTRP C2c R2 Gate3 - Read-only Occurrence Query
+on:
+  push:
+    branches: [ci/build-2.0-search]
+    paths: [CI-R2-GATE3.json]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  query-contract-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Match immutable private source blobs and R5 rollback
+        shell: pwsh
+        run: |
+          $m=Get-Content -Raw ./CI-R2-GATE3.json | ConvertFrom-Json
+          if ($m.private_source -ne 'a523bbee6b537e695660c254a0d2874aecb62462') { throw 'Private source not pinned' }
+          if ($m.rollback -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'R5 rollback changed' }
+          foreach($entry in $m.blobs.PSObject.Properties) {
+            $actual=(git rev-parse "HEAD:$($entry.Name)").Trim()
+            if($LASTEXITCODE -ne 0 -or $actual -ne $entry.Value) { throw "Private source Git blob mismatch: $($entry.Name)" }
+          }
+      - name: Restore complete R5 canonical data
+        uses: actions/download-artifact@v4
+        with:
+          name: The-Holy-Quran-TRP-Build-1.9-R5-win-x64
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 37973098209
+          github-token: ${{ github.token }}
+          path: ./frozen-r5
+      - name: Restore separately validated C1 substring search index
+        uses: actions/download-artifact@v4
+        with:
+          name: THTRP-B20-C1-search-index-validation
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 38025181456
+          github-token: ${{ github.token }}
+          path: ./verified-C1
+      - name: Materialize original pinned QAC morphology Git blob
+        shell: pwsh
+        run: |
+          git clone --no-checkout --filter=blob:none --quiet https://github.com/taziksh/quran-frequencies.git ./qac-origin
+          if($LASTEXITCODE -ne 0) { throw 'Could not read pinned QAC origin' }
+          python -c "import subprocess,pathlib; b=subprocess.run(['git','-C','qac-origin','cat-file','blob','b91cec6e95d5e0306550b4aedacc7380dc71152a'],stdout=subprocess.PIPE,check=True).stdout;pathlib.Path('qac.txt').write_bytes(b)"
+          if($LASTEXITCODE -ne 0 -or (git hash-object --no-filters ./qac.txt).Trim() -ne 'b91cec6e95d5e0306550b4aedacc7380dc71152a') { throw 'Unpinned morphology' }
+      - name: Derive verified transient position index without redistributing QAC annotations
+        shell: pwsh
+        run: |
+          python ./tools/CorpusLemmaIndexBuilder/build_lemma_positions.py --annotation ./qac.txt --corpus ./frozen-r5/Corpus/corpus.sqlite --word-by-word ./frozen-r5/Corpus/word-by-word.sqlite --output ./scratch/derived-lemma-positions.sqlite
+          if($LASTEXITCODE -ne 0) { throw 'Cannot build pinned derived lemma index' }
+          if((Get-FileHash ./scratch/derived-lemma-positions.sqlite -Algorithm SHA256).Hash.ToLowerInvariant() -ne '96ed3f4c1a761ffa7e9be4018fa0c191fe08e20cd11270ca79c6bba599262c2d') { throw 'Derived index not deterministic' }
+      - name: Native C# lemma/phrase/Ayah counting contract probe
+        shell: pwsh
+        run: |
+          dotnet run --project ./tools/CorpusOccurrenceQueryProbe/CorpusOccurrenceQueryProbe.csproj -c Release -- ./frozen-r5/Corpus/corpus.sqlite ./frozen-r5/Corpus/word-by-word.sqlite ./scratch/derived-lemma-positions.sqlite
+          if($LASTEXITCODE -ne 0) { throw 'Native C# occurrence query probe failed' }
+      - name: Recheck inherited C2a literal/normalized search invariants
+        shell: pwsh
+        run: |
+          dotnet run --project ./tools/CorpusSearchQueryProbe/CorpusSearchQueryProbe.csproj -c Release -- ./frozen-r5/Corpus/corpus.sqlite ./verified-C1/corpus-search.sqlite
+          if($LASTEXITCODE -ne 0) { throw 'C2a substring query contracts changed' }
+      - name: Native Windows x64 application compilation without bundling GPL derivative
+        shell: pwsh
+        run: |
+          dotnet restore ./src/QuranReconciliation/QuranReconciliation.csproj -r win-x64
+          if($LASTEXITCODE -ne 0) { throw 'WinUI restore failed' }
+          dotnet build ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --no-restore
+          if($LASTEXITCODE -ne 0) { throw 'WinUI build failed' }
+          if(Test-Path './src/QuranReconciliation/bin/Release/net10.0-windows10.0.19041.0/win-x64/Corpus/derived-lemma-positions.sqlite') { throw 'Unreviewed GPL annotation was bundled' }
+          if((Get-FileHash ./frozen-r5/Corpus/corpus.sqlite -Algorithm SHA256).Hash.ToLowerInvariant() -ne '188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862') { throw 'Canonical corpus mutated' }
+          Write-Host 'Gate3 native WinUI build, source immutability and licensing boundary PASS'
