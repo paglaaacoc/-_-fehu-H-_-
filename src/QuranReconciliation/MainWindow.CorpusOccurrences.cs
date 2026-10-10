@@ -40,8 +40,18 @@ public sealed partial class MainWindow
         string mode = SelectedCorpusSearchMode();
         bool text = mode == "text";
         CorpusSearchLanguageSelector.IsEnabled = text;
-        CorpusSearchTranslationSelector.IsEnabled = text;
+        CorpusSearchTranslationSelector.IsEnabled =
+            text && SelectedCorpusSearchLanguage() != CorpusSearchLanguage.Arabic;
+        CorpusSearchTranslationSelector.Header =
+            text ? "Translation source" : "Translation source (Text mode only)";
         CorpusSearchNormalizedToggle.IsEnabled = text;
+        // In full-Ayah comparison the old "All scripts" choice has always
+        // compared Uthmani alone; make that existing truth visible.
+        if (CorpusSearchScriptSelector.Items[0] is ComboBoxItem defaultScript)
+        {
+            defaultScript.Content = mode == "ayah" ? "Uthmani (default)" : "All Arabic scripts";
+            defaultScript.Tag = mode == "ayah" ? "uthmani" : "all";
+        }
         CorpusSearchScriptSelector.IsEnabled =
             mode == "ayah" ||
             (text && SelectedCorpusSearchLanguage() == CorpusSearchLanguage.Arabic);
@@ -74,8 +84,10 @@ public sealed partial class MainWindow
         }
         if (mode != "lemma")
             ClearCorpusLemmaChoices();
-        if (_ready && CorpusSearchWorkspaceGrid.Visibility == Visibility.Visible)
-            ScheduleCorpusSearch();
+        // Apply the mode-aware filter state (and clear a script-specific Text
+        // filter if Language is not Arabic) through its single authority.
+        if (_ready)
+            CorpusSearchFilter_Changed(sender, e);
     }
 
     private void CorpusSearchLemmaCandidate_Changed(
@@ -154,11 +166,65 @@ public sealed partial class MainWindow
         return (s, a);
     }
 
+    private int? _corpusChapterPreviewSurah;
+
+    /// <summary>
+    /// Only bare chapter numbers and unfinished "chapter:" inputs are chapter
+    /// navigation hints. Completed "chapter:ayah" inputs ALWAYS execute the
+    /// existing exact-complete-Ayah comparison, never prefix matching.
+    /// </summary>
+    private bool TryShowCorpusChapterReference(string reference)
+    {
+        bool chapterOnly = reference.Length > 0 &&
+            reference.All(c => c is >= '0' and <= '9');
+        bool waitingForAyah = reference.EndsWith(':') &&
+            reference.Length > 1 &&
+            reference[..^1].All(c => c is >= '0' and <= '9');
+        if (!chapterOnly && !waitingForAyah) return false;
+
+        string numeric = waitingForAyah ? reference[..^1] : reference;
+        if (!int.TryParse(numeric, out int surah) ||
+            surah is < 1 or > 114)
+        {
+            _corpusChapterPreviewSurah = null;
+            CorpusSearchSummaryText.Text = "Enter a valid Surah number from 1 through 114.";
+            CorpusSearchLoadMoreButton.Visibility = Visibility.Collapsed;
+            return true;
+        }
+
+        var chapter = _chapters[surah - 1];
+        _corpusChapterPreviewSurah = surah;
+        CorpusSearchChapterTitle.Text =
+            $"Surah {chapter.Number} · {chapter.DisplayName}";
+        CorpusSearchChapterDetails.Text =
+            $"{chapter.VersesCount} canonical Ayat · read-only chapter metadata.";
+        CorpusSearchChapterSummaryPanel.Visibility = Visibility.Visible;
+        CorpusSearchResultsList.Visibility = Visibility.Collapsed;
+        CorpusSearchLoadMoreButton.Visibility = Visibility.Collapsed;
+        _corpusSearchHasMore = false;
+        CorpusSearchSummaryText.Text = waitingForAyah
+            ? $"Surah {surah} selected. Enter an Ayah number after the colon."
+            : $"Surah {surah} summary. Enter {surah}:Ayah for exact complete-text matching.";
+        StatusText.Text = $"Corpus Search · Surah {surah} (read-only reference).";
+        return true;
+    }
+
+    private void CorpusSearchViewFirstAyah_Click(object sender, RoutedEventArgs e)
+    {
+        if (_corpusChapterPreviewSurah is not int surah ||
+            _ownerStateOperationActive ||
+            CorpusSearchChapterSummaryPanel.Visibility != Visibility.Visible)
+            return;
+        _ = ShowCorpusSearchVersePreviewAsync(surah, 1);
+    }
+
     private async Task RunCorpusOccurrenceSearchAsync(bool append,
         int generation, int offset)
     {
         string mode = SelectedCorpusSearchMode();
         string text = CorpusSearchTextBox.Text.Trim();
+        if (mode == "ayah" && TryShowCorpusChapterReference(text))
+            return;
         var engine = await GetCorpusOccurrenceRepositoryAsync();
         if (generation != _corpusSearchGeneration) return;
 

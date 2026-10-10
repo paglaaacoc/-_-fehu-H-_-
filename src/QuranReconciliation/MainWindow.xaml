@@ -1588,6 +1588,25 @@
                        Text="Enter a word or phrase. Exact hits precede normalized matches."
                        Foreground="{StaticResource MutedTextBrush}"
                        FontSize="13" TextWrapping="Wrap" Margin="0,14,0,10"/>
+            <Border x:Name="CorpusSearchChapterSummaryPanel" Grid.Row="3"
+                    Background="{StaticResource PanelBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="8"
+                    Padding="18" VerticalAlignment="Top"
+                    Visibility="Collapsed">
+                <StackPanel Spacing="10">
+                    <TextBlock x:Name="CorpusSearchChapterTitle"
+                               FontSize="20" FontWeight="SemiBold"
+                               TextWrapping="Wrap"
+                               Foreground="{StaticResource TextBrush}"/>
+                    <TextBlock x:Name="CorpusSearchChapterDetails"
+                               FontSize="15" TextWrapping="Wrap"
+                               Foreground="{StaticResource MutedTextBrush}"/>
+                    <Button Content="View first Ayah (read-only)"
+                            HorizontalAlignment="Left" Padding="14,6"
+                            Click="CorpusSearchViewFirstAyah_Click"/>
+                </StackPanel>
+            </Border>
             <ListView x:Name="CorpusSearchResultsList" Grid.Row="3"
                       Background="Transparent" SelectionMode="None"
                       HorizontalContentAlignment="Stretch"

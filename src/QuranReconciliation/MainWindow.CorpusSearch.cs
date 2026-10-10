@@ -114,18 +114,20 @@ public sealed partial class MainWindow
     {
         if (!_ready) return;
 
+        string mode = SelectedCorpusSearchMode();
+        bool textMode = mode == "text";
         var language = SelectedCorpusSearchLanguage();
         bool isArabic = language == CorpusSearchLanguage.Arabic;
-        CorpusSearchScriptSelector.IsEnabled = isArabic;
-        if (!isArabic && CorpusSearchScriptSelector.SelectedIndex > 0)
+        CorpusSearchScriptSelector.IsEnabled =
+            mode == "ayah" || (textMode && isArabic);
+        if (textMode && !isArabic && CorpusSearchScriptSelector.SelectedIndex > 0)
         {
-            // Explicit script choices mean Arabic-only; don't silently hide
-            // English/Bangla hits when changing the language selector.
+            // An explicit script constrains Arabic only in Text mode.
             CorpusSearchScriptSelector.SelectedIndex = 0;
         }
 
-        CorpusSearchTranslationSelector.IsEnabled = !isArabic;
-        if (isArabic && CorpusSearchTranslationSelector.SelectedIndex > 0)
+        CorpusSearchTranslationSelector.IsEnabled = textMode && !isArabic;
+        if (textMode && isArabic && CorpusSearchTranslationSelector.SelectedIndex > 0)
             CorpusSearchTranslationSelector.SelectedIndex = 0;
 
         if (CorpusSearchWorkspaceGrid.Visibility == Visibility.Visible)
@@ -164,6 +166,8 @@ public sealed partial class MainWindow
     {
         _corpusSearchRows.Clear();
         CorpusSearchResultsList.Items.Clear();
+        CorpusSearchChapterSummaryPanel.Visibility = Visibility.Collapsed;
+        CorpusSearchResultsList.Visibility = Visibility.Visible;
         CorpusSearchLoadMoreButton.Visibility = Visibility.Collapsed;
         _corpusSearchHasMore = false;
     }
