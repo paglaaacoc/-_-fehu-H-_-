@@ -49,6 +49,21 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
 
+    <!-- Private/personal derived morphology evidence. Staged only after its
+         exact-source checks; canonical Quran and user data remain separate. -->
+    <Content Include="Resources\SearchIndex\corpus-lemma-positions.sqlite"
+             Condition="Exists('Resources\SearchIndex\corpus-lemma-positions.sqlite')">
+      <TargetPath>Corpus\corpus-lemma-positions.sqlite</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\SearchIndex\QAC-MORPHOLOGY-ATTRIBUTION.md"
+             Condition="Exists('Resources\SearchIndex\QAC-MORPHOLOGY-ATTRIBUTION.md')">
+      <TargetPath>Corpus\QAC-MORPHOLOGY-ATTRIBUTION.md</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+
     <Content Include="Resources\juz-map.json">
       <TargetPath>Corpus\juz-map.json</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -17,6 +17,21 @@ public sealed class CorpusSearchDisplayRow
     public string MatchLabel { get; }
     public string Text { get; }
 
+    internal CorpusSearchDisplayRow(string verseKey, string source,
+        string explanation, string displayedText)
+    {
+        string[] parts = verseKey.Split(':');
+        int surah = int.Parse(parts[0]);
+        int ayah = int.Parse(parts[1]);
+        Hit = new CorpusSearchHit(verseKey, surah, ayah, "arabic", null,
+            source, "arabic", "uthmani", displayedText,
+            CorpusSearchMatch.Exact);
+        Location = $"Ayah {verseKey}";
+        Source = source;
+        MatchLabel = explanation;
+        Text = displayedText;
+    }
+
     internal CorpusSearchDisplayRow(CorpusSearchHit hit)
     {
         Hit = hit;
@@ -233,6 +248,11 @@ public sealed partial class MainWindow
 
         try
         {
+            if (SelectedCorpusSearchMode() != "text")
+            {
+                await RunCorpusOccurrenceSearchAsync(append, generation, offset);
+                return;
+            }
             CorpusSearchQuery query = BuildCorpusSearchQuery(offset);
             var service = await GetCorpusSearchRepositoryAsync();
             CorpusSearchPage page = await Task.Run(() => service.Search(query));
@@ -283,9 +303,19 @@ public sealed partial class MainWindow
             button.Tag is not CorpusSearchDisplayRow selected)
             return;
 
-        // Reuse the R5 History navigation path. Existing per-identity research
-        // drafts, canonical current Surah, lazy verse rendering and reader
-        // location preservation stay under that single authority.
+        _ = ShowCorpusSearchVersePreviewAsync(
+            selected.Hit.ChapterNumber, selected.Hit.VerseNumber);
+    }
+
+    private void CorpusSearchOpenResearch_Click(object sender, RoutedEventArgs e)
+    {
+        if (_ownerStateOperationActive ||
+            sender is not Button button ||
+            button.Tag is not CorpusSearchDisplayRow selected)
+            return;
+
+        // Deliberate action, not the default result click; this retains the
+        // existing R5 dirty-draft/reader navigation authority.
         NavigateToResearchTarget(selected.Hit.ChapterNumber, selected.Hit.VerseNumber);
     }
 }

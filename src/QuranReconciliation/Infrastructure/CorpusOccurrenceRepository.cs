@@ -9,6 +9,11 @@ internal sealed record CorpusOccurrencePage(
     IReadOnlyList<CorpusWordOccurrence> Hits, long WordOccurrences,
     long DistinctAyat, int Offset, int Limit, bool HasMore);
 internal sealed record CorpusLemmaCandidate(string Lemma, string Pos, long Occurrences, long DistinctAyat);
+internal sealed record CorpusAyahOccurrence(string VerseKey, int FirstWordId,
+    IReadOnlyList<int> WordPositions, string UthmaniExample);
+internal sealed record CorpusAyahOccurrencePage(
+    IReadOnlyList<CorpusAyahOccurrence> Hits, long WordOccurrences,
+    long DistinctAyat, int Offset, int Limit, bool HasMore);
 internal sealed record CorpusRepeatedAyah(string VerseKey, int Surah, int Ayah);
 
 /// <summary>
@@ -91,6 +96,54 @@ internal sealed class CorpusOccurrenceRepository
         q.Parameters.AddWithValue("$lemma", lemma);
         q.Parameters.AddWithValue("$pos", pos);
         return Page(q, total, ayat, limit, offset);
+    }
+
+    /// <summary>
+    /// One card per Ayah, with all verified lemma positions inside it.
+    /// Pages count distinct Ayat, not individual repeated words.
+    /// </summary>
+    internal CorpusAyahOccurrencePage SearchLemmaAyat(string lemma, string pos,
+        int limit = 50, int offset = 0)
+    {
+        ValidateText(lemma, 80);
+        ValidateText(pos, 20);
+        ValidatePage(limit, offset);
+        using var db = Open(_path);
+        using var count = db.CreateCommand();
+        count.CommandText = """
+            SELECT COUNT(*),COUNT(DISTINCT verse_key)
+            FROM lemma_positions WHERE lemma=$lemma AND pos=$pos;
+            """;
+        count.Parameters.AddWithValue("$lemma", lemma);
+        count.Parameters.AddWithValue("$pos", pos);
+        var (words, ayat) = Count(count);
+        using var cmd = db.CreateCommand();
+        cmd.CommandText = """
+            SELECT l.verse_key, MIN(w.word_id), GROUP_CONCAT(l.position, ','),
+                   MIN(w.text_uthmani)
+            FROM lemma_positions l JOIN word_positions w
+              ON l.verse_key=w.verse_key AND l.position=w.position
+            WHERE l.lemma=$lemma AND l.pos=$pos
+            GROUP BY l.verse_key
+            ORDER BY MIN(w.word_id)
+            LIMIT $take OFFSET $skip;
+            """;
+        cmd.Parameters.AddWithValue("$lemma", lemma);
+        cmd.Parameters.AddWithValue("$pos", pos);
+        cmd.Parameters.AddWithValue("$take", limit + 1);
+        cmd.Parameters.AddWithValue("$skip", offset);
+        var rows = new List<CorpusAyahOccurrence>();
+        using var rd = cmd.ExecuteReader();
+        while (rd.Read())
+        {
+            var positions = rd.GetString(2).Split(',')
+                .Select(int.Parse).OrderBy(p => p).ToArray();
+            rows.Add(new CorpusAyahOccurrence(rd.GetString(0), rd.GetInt32(1),
+                positions, rd.GetString(3)));
+        }
+        bool more = rows.Count > limit;
+        if (more) rows.RemoveAt(rows.Count - 1);
+        return new CorpusAyahOccurrencePage(rows, words, ayat, offset, limit, more);
     }
 
     /// <summary>

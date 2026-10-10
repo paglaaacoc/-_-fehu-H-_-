@@ -1506,6 +1506,27 @@
                 <StackPanel Spacing="12">
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="300"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="CorpusSearchModeSelector"
+                                  Header="Research search method"
+                                  HorizontalAlignment="Stretch"
+                                  SelectedIndex="0"
+                                  SelectionChanged="CorpusSearchMode_Changed">
+                            <ComboBoxItem Content="Text — literal &amp; normalized" Tag="text"/>
+                            <ComboBoxItem Content="Verified Arabic lemma — occurrence counts" Tag="lemma"/>
+                            <ComboBoxItem Content="Exact Uthmani word sequence" Tag="phrase"/>
+                            <ComboBoxItem Content="Identical complete Ayah" Tag="ayah"/>
+                        </ComboBox>
+                        <TextBlock x:Name="CorpusSearchModeDescription" Grid.Column="1"
+                                   Text="Text search returns source-attributed matches. For occurrence counts choose a verified lemma or an exact phrase."
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Bottom" Margin="0,0,0,6"/>
+                    </Grid>
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
@@ -1556,6 +1577,11 @@
                                   Checked="CorpusSearchFilter_Changed"
                                   Unchecked="CorpusSearchFilter_Changed"/>
                     </Grid>
+                    <ComboBox x:Name="CorpusSearchLemmaCandidateSelector"
+                              Header="Choose verified grammatical lemma / part of speech"
+                              Visibility="Collapsed"
+                              HorizontalAlignment="Stretch"
+                              SelectionChanged="CorpusSearchLemmaCandidate_Changed"/>
                 </StackPanel>
             </Border>
             <TextBlock x:Name="CorpusSearchSummaryText" Grid.Row="2"
@@ -1594,9 +1620,12 @@
                                            TextTrimming="CharacterEllipsis"
                                            IsTextSelectionEnabled="True"
                                            Foreground="{StaticResource TextBrush}"/>
-                                <Button Content="Read Ayah ↗" Padding="14,6"
-                                        HorizontalAlignment="Left"
-                                        Tag="{Binding}" Click="CorpusSearchReadAyah_Click"/>
+                                <StackPanel Orientation="Horizontal" Spacing="9">
+                                    <Button Content="View Ayah (read-only)" Padding="14,6"
+                                            Tag="{Binding}" Click="CorpusSearchReadAyah_Click"/>
+                                    <Button Content="Open in Research ↗" Padding="14,6"
+                                            Tag="{Binding}" Click="CorpusSearchOpenResearch_Click"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </DataTemplate>

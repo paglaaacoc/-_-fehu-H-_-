@@ -28,6 +28,17 @@ Check(!god.Hits.Select(h => h.WordId).Intersect(god2.Hits.Select(h => h.WordId))
     "An Allah word position was duplicated across pages");
 var tail = engine.SearchLemma("{ll~ah", "PN", limit: 50, offset: 2695);
 Check(tail.Hits.Count == 4 && !tail.HasMore, "Allah last page incomplete");
+var grouped = engine.SearchLemmaAyat("{ll~ah", "PN", limit: 50);
+Check(grouped.WordOccurrences == 2699 && grouped.DistinctAyat == 1821 &&
+      grouped.Hits.Count == 50 && grouped.HasMore,
+    "Grouped lemma count and canonical Ayah pagination");
+Check(grouped.Hits.Sum(h => h.WordPositions.Count) > 50,
+    "Repeated lemma positions must remain visible inside individual Ayah results");
+var lastGrouped = engine.SearchLemmaAyat("{ll~ah", "PN", limit: 50, offset: 1800);
+Check(lastGrouped.Hits.Count == 21 && !lastGrouped.HasMore,
+    "Final grouped Ayah page incomplete");
+Check(grouped.Hits.All(h => h.WordPositions.SequenceEqual(h.WordPositions.OrderBy(x => x))),
+    "Within-Ayah positions are not sorted or unique");
 var mercy = engine.SearchLemma("raHomap", "N", limit: 50);
 Check(mercy.WordOccurrences == 114 && mercy.DistinctAyat == 112 &&
       mercy.Hits.Count == 50, "Rahmah noun counts");

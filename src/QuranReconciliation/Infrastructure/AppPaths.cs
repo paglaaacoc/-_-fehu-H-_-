@@ -7,6 +7,7 @@ internal static class AppPaths
     internal static string CorpusDirectory => Path.Combine(BaseDirectory, "Corpus");
     internal static string CorpusDatabase => Path.Combine(CorpusDirectory, "corpus.sqlite");
     internal static string CorpusSearchDatabase => Path.Combine(CorpusDirectory, "corpus-search.sqlite");
+    internal static string CorpusLemmaDatabase => Path.Combine(CorpusDirectory, "corpus-lemma-positions.sqlite");
     internal static string WordByWordDatabase => Path.Combine(CorpusDirectory, "word-by-word.sqlite");
     internal static string JuzMapFile => Path.Combine(CorpusDirectory, "juz-map.json");
     internal static string BackupsDirectory => Path.Combine(BaseDirectory, "Backups");
