@@ -1,0 +1,93 @@
+name: Pathfinder S2D B3 isolated backup archive CI
+on:
+  push:
+    branches:
+      - dev/pathfinder-scratchpad-s2-r1-20261009
+    paths:
+      - NivareQ-Pathfinder-S2D-B3-INTERNAL-Full-Source-2026-10-10.zip
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-gates:
+    if: github.ref == 'refs/heads/dev/pathfinder-scratchpad-s2-r1-20261009'
+    runs-on: windows-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lane: backup-harness
+            platform: x64
+            rid: win-x64
+          - lane: winui-x64
+            platform: x64
+            rid: win-x64
+          - lane: winui-arm64
+            platform: ARM64
+            rid: win-arm64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify immutable B3 ZIP, manifest and medical payload before execution
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = Join-Path $env:GITHUB_WORKSPACE 'NivareQ-Pathfinder-S2D-B3-INTERNAL-Full-Source-2026-10-10.zip'
+          if (-not (Test-Path -LiteralPath $zip -PathType Leaf)) { throw 'B3 source ZIP missing.' }
+          $expected = '226728052a16d5d88ca470d7c17b15324de5e517c2b09788475925472c640a27'
+          $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hash -ne $expected) { throw "Wrong source ZIP SHA: $hash" }
+          $dst = Join-Path $env:GITHUB_WORKSPACE '_pathfinder_s2d_b3_source'
+          New-Item -ItemType Directory -Force -Path $dst | Out-Null
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [IO.Compression.ZipFile]::ExtractToDirectory($zip,$dst)
+          $manifest = Get-Content -LiteralPath (Join-Path $dst 'INTEGRITY-S2D-B3-MANIFEST.json') -Raw | ConvertFrom-Json
+          if ($manifest.checkpoint -notlike 'S2-D B3 INTERNAL*') { throw 'Wrong B3 source manifest.' }
+          $entries = @($manifest.hashes_sha256_excluding_this_manifest.PSObject.Properties)
+          if ($entries.Count -ne 609) { throw "B3 manifest count mismatch: $($entries.Count)" }
+          foreach ($e in $entries) {
+            $path = [string]$e.Name
+            if ($path.Contains('..') -or [IO.Path]::IsPathRooted($path) -or $path.StartsWith('/')) { throw "Unsafe source path: $path" }
+            $file = Join-Path $dst $path
+            if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "Missing source: $path" }
+            if ((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant() -ne [string]$e.Value) { throw "Source hash mismatch: $path" }
+          }
+          & (Join-Path $dst 'tools/verify-medical-payload.ps1')
+          Write-Host 'PASS exact B3 source, 609 signed-manifest hashes and 132 preserved medical files.'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Run portable B1 B2 B3 static and inherited JS contract guards
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: |
+          node tests/NotesProtocolHarness/run.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/NotesWebTransportHarness/run.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tests/NotesLifecycleJsHarness/run.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/s2d_b1_static_gate.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/s2d_b2_coherent_static_gate.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/s2d_b3_budget_static_gate.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Compile and run .NET 10 B1 B2 B3 adversarial backup harness
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet run -c Release --project tests/NotesBackupVNextHarness/NotesBackupVNextHarness.csproj
+      - name: Restore WinUI (no installer, release or live Notes activation)
+        if: matrix.lane != 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet restore src/NivareQ.Step2Pathfinder/NivareQ.Step2Pathfinder.csproj -r ${{ matrix.rid }} -p:Platform=${{ matrix.platform }}
+      - name: Compile native WinUI
+        if: matrix.lane != 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet build src/NivareQ.Step2Pathfinder/NivareQ.Step2Pathfinder.csproj -c Release -r ${{ matrix.rid }} --no-restore -p:Platform=${{ matrix.platform }}
