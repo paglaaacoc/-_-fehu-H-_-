@@ -1,0 +1,95 @@
+name: THTRP Build 2.0 - C2a Corpus Search Query Validation
+on:
+  push:
+    branches: [ci/build-2.0-search]
+    paths: [CI-QUERY-CHECKPOINT.json]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: thtrp-build20-c2a-query
+  cancel-in-progress: true
+jobs:
+  query-windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout source-mirrored isolated Build 2.0 branch
+        uses: actions/checkout@v4
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify pinned private C2a source blobs
+        shell: pwsh
+        run: |
+          $p = Get-Content -Raw ./CI-QUERY-CHECKPOINT.json | ConvertFrom-Json
+          if ($p.private_source_sha -ne '3a5aa08e51af16f582fa48fde43b17526bbaf93f') {
+            throw 'C2a source identity changed.'
+          }
+          if ($p.r5_rollback_sha -ne '6b54c3987934caa860094adcbc92ccf504b9342b') {
+            throw 'R5 rollback SHA mismatch.'
+          }
+          if (@($p.source_blob_shas.PSObject.Properties).Count -ne 10) {
+            throw 'Expected 10 protected source blobs.'
+          }
+          foreach ($entry in $p.source_blob_shas.PSObject.Properties) {
+            $actual = (git rev-parse "HEAD:$($entry.Name)").Trim()
+            if ($LASTEXITCODE -ne 0 -or $actual -ne $entry.Value) {
+              throw "Private Git blob mismatch: $($entry.Name)"
+            }
+          }
+          Write-Host 'Private C0/C1/C2a source blob hashes 10/10 PASS'
+      - name: Reuse accepted R5 corpus package
+        uses: actions/download-artifact@v4
+        with:
+          name: The-Holy-Quran-TRP-Build-1.9-R5-win-x64
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 37973098209
+          github-token: ${{ github.token }}
+          path: ./r5-artifact
+      - name: Reuse independently validated C1 search index
+        uses: actions/download-artifact@v4
+        with:
+          name: THTRP-B20-C1-search-index-validation
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 38025181456
+          github-token: ${{ github.token }}
+          path: ./c1-artifact
+      - name: Check exact pinned input hashes and no write access
+        shell: pwsh
+        run: |
+          $db = './r5-artifact/Corpus/corpus.sqlite'
+          $ix = './c1-artifact/corpus-search.sqlite'
+          if (!(Test-Path $db) -or !(Test-Path $ix)) { throw 'Missing verified pinned input.' }
+          if ((Get-FileHash $db -Algorithm SHA256).Hash.ToLowerInvariant() -ne
+             '188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862') {
+             throw 'Canonical corpus SHA mismatch.'
+          }
+          if ((Get-FileHash $ix -Algorithm SHA256).Hash.ToLowerInvariant() -ne
+             'ab2be67067172e17592a4bc981b5930ee5e45e3c7c313f332f78d151f198d830') {
+             throw 'Independent C1 search-index SHA mismatch.'
+          }
+          Write-Host 'Canonical corpus and C1 index immutable input hashes PASS'
+      - name: Execute C2a multilingual query safety and coverage probe
+        shell: pwsh
+        run: |
+          dotnet run --project ./tools/CorpusSearchQueryProbe/CorpusSearchQueryProbe.csproj -c Release -- ./r5-artifact/Corpus/corpus.sqlite ./c1-artifact/corpus-search.sqlite
+          if ($LASTEXITCODE -ne 0) { throw 'C2a query probe failed.' }
+      - name: Compile native WinUI application with C2a repository
+        shell: pwsh
+        run: |
+          dotnet restore ./src/QuranReconciliation/QuranReconciliation.csproj -r win-x64
+          if ($LASTEXITCODE -ne 0) { throw 'Native restore failed.' }
+          dotnet build ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --no-restore
+          if ($LASTEXITCODE -ne 0) { throw 'Native compile regression.' }
+      - name: Ensure read-only queries did not change corpus or index
+        shell: pwsh
+        run: |
+          $db = (Get-FileHash './r5-artifact/Corpus/corpus.sqlite' -Algorithm SHA256).Hash.ToLowerInvariant()
+          $ix = (Get-FileHash './c1-artifact/corpus-search.sqlite' -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($db -ne '188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862' -or
+              $ix -ne 'ab2be67067172e17592a4bc981b5930ee5e45e3c7c313f332f78d151f198d830') {
+            throw 'Read-only query altered pinned source.'
+          }
+          Write-Host 'Post-query source and index hashes unchanged.'
