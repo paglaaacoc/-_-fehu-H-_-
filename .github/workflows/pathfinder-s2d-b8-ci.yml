@@ -189,7 +189,7 @@ jobs:
             'NotesVNextCommitBoundaryV1.cs'=@('src/NivareQ.Step2Pathfinder/Services/NotesVNextCommitBoundaryV1.cs','c60b4dada0bb1466caddc03747687abfd79466b40a177a6930b1e4a5143ad632')
           }
           if ($env:PF_LANE -eq 'backup-harness') {
-            $files['Program.cs']=@('tests/NotesVNextCommitHarness/Program.cs','PLACE_PROGRAM_SHA')
+            $files['Program.cs']=@('tests/NotesVNextCommitHarness/Program.cs','71a5628a37d3bed3d01fec0b230d90a4fb7ba430d8cf8a951d28ac6dbd19d407')
             $files['NotesVNextCommitHarness.csproj']=@('tests/NotesVNextCommitHarness/NotesVNextCommitHarness.csproj','2b47a0793c9864b8f1b630b5734d7f6df3cc5207bd5f14e0da8f699ce00a89ab')
           }
           foreach ($item in $files.GetEnumerator()) {
