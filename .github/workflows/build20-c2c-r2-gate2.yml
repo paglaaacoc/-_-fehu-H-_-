@@ -16,7 +16,7 @@ jobs:
         shell: pwsh
         run: |
           $manifest=Get-Content -Raw ./CI-R2-GATE2.json | ConvertFrom-Json
-          if ($manifest.private_source -ne '19a3968ce4626d79957e44b59ec33c9a33c574cb') { throw 'Unpinned private source' }
+          if ($manifest.private_source -ne 'ebfc48cff8a5934105a2095521f8ac0319d62ca0') { throw 'Unpinned private source' }
           if ($manifest.rollback -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'Accepted rollback identity changed' }
           foreach ($property in $manifest.source_blobs.PSObject.Properties) {
             $hash=(git rev-parse "HEAD:$($property.Name)").Trim()
