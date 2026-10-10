@@ -29,7 +29,9 @@ try
     }.ToString()))
     using (var target = new SqliteConnection(new SqliteConnectionStringBuilder
     {
-        DataSource = staged, Mode = SqliteOpenMode.ReadWriteCreate
+        DataSource = staged, Mode = SqliteOpenMode.ReadWriteCreate,
+        // Windows must release the staged file handle before atomic rename.
+        Pooling = false
     }.ToString()))
     {
         source.Open();
@@ -239,7 +241,9 @@ static string Sha256FromIndex(string path)
 {
     using var db = new SqliteConnection(new SqliteConnectionStringBuilder
     {
-        DataSource = path, Mode = SqliteOpenMode.ReadOnly
+        DataSource = path, Mode = SqliteOpenMode.ReadOnly,
+        // Do not retain a pooled handle on the staged file when verifying its digest.
+        Pooling = false
     }.ToString());
     db.Open();
     using var read = db.CreateCommand();
