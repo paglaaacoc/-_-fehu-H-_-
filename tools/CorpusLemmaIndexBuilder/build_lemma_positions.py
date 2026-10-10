@@ -43,7 +43,7 @@ def read_annotation(path):
     segments = 0
     stem_count = 0
     for lineno, raw in enumerate(open(path, encoding="utf-8-sig"), 1):
-        if raw.lstrip().startswith("#") or not raw.strip():
+        if raw.lstrip().startswith("#") or not raw.strip() or raw.startswith("LOCATION\t"):
             continue
         cells = raw.rstrip("\r\n").split("\t")
         m = LOCATION.fullmatch(cells[0]) if cells else None
