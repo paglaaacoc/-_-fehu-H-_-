@@ -96,7 +96,7 @@ def build(args):
     if len(accepted_slots) != len(accepted) or slots != accepted_slots:
         raise ValueError(f"QAC-WBW alignment failed: missing={len(accepted_slots-slots)}, "
                          f"extra={len(slots-accepted_slots)}")
-    if any(key not in accepted_slots for _, _, key, _ in lemma_rows):
+    if any((verse_key, position) not in accepted_slots for _, _, verse_key, position in lemma_rows):
         raise ValueError("Lemma positions outside accepted WBW authority.")
     if any(v not in canon for v,_,_,_ in accepted):
         raise ValueError("Word position references an absent canonical Ayah.")
