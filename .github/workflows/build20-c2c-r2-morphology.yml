@@ -31,9 +31,13 @@ jobs:
       - name: Retrieve public pinned QAC v0.4 morphology annotation
         shell: pwsh
         run: |
-          $url='https://raw.githubusercontent.com/taziksh/quran-frequencies/079cdc74cd494ec1b35011363288d80cae047c51/data/quranic-corpus-morphology-0.4.txt'
-          Invoke-WebRequest -Uri $url -OutFile ./qac-morphology-v0.4.txt -MaximumRetryCount 2
-          $sha=(git hash-object ./qac-morphology-v0.4.txt).Trim()
+          git clone --no-checkout --filter=blob:none --quiet https://github.com/taziksh/quran-frequencies.git ./qac-upstream
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot retrieve pinned original QAC Git repository' }
+          git -C ./qac-upstream cat-file -t b91cec6e95d5e0306550b4aedacc7380dc71152a
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned morphology Git blob unavailable' }
+          python -c "import subprocess,pathlib; p=pathlib.Path('qac-morphology-v0.4.txt'); r=subprocess.run(['git','-C','qac-upstream','cat-file','blob','b91cec6e95d5e0306550b4aedacc7380dc71152a'], stdout=subprocess.PIPE,check=True); p.write_bytes(r.stdout); print('Pinned morphology bytes:',len(r.stdout))"
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to materialize exact Git blob' }
+          $sha=(git hash-object --no-filters ./qac-morphology-v0.4.txt).Trim()
           if ($sha -ne 'b91cec6e95d5e0306550b4aedacc7380dc71152a') { throw "Pinned QAC data mismatch: $sha" }
           Write-Host 'Pinned QAC morphology v0.4: Git blob SHA PASS; original license/source remain intact'
       - name: Validate all word positions and target lemmas
