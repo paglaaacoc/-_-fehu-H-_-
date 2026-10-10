@@ -316,6 +316,31 @@ jobs:
             }
           }
           Write-Host 'B10 authored patch, provider Save wiring and native harness validated. The opt-in writer attachment is uninstalled.'
+      - name: Compile and run .NET 10 B1 B2 B3 adversarial backup harness
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet run -c Release --project tests/NotesBackupVNextHarness/NotesBackupVNextHarness.csproj
+      - name: Run B6 native writer ACK restore epoch adversarial tests
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet run -c Release --project tests/NotesVNextCoordinatorHarness/NotesVNextCoordinatorHarness.csproj
+      - name: Compile and run B8 fake-journal native commit boundary harness
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet run -c Release --project tests/NotesVNextCommitHarness/NotesVNextCommitHarness.csproj
+      - name: Run B9 native closed-set writer admission adversarial tests
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet run -c Release --project tests/NotesVNextAdmissionHarness/NotesVNextAdmissionHarness.csproj
+      - name: Compile and run B10 real synchronous writer and stale queued epoch tests
+        if: matrix.lane == 'backup-harness'
+        shell: pwsh
+        working-directory: ./_pathfinder_s2d_b3_source
+        run: dotnet run -c Release --project tests/NotesVNextRealSaveHooksHarness/NotesVNextRealSaveHooksHarness.csproj
       - name: Apply checksum-guarded B11 Notes SQLite and renderer session epoch overlay
         shell: pwsh
         env:
@@ -343,31 +368,6 @@ jobs:
             }
           }
           Write-Host 'PASS B11 native source SHA gate: ten SQLite/attachment mutation scopes and stale renderer session epoch.'
-      - name: Compile and run .NET 10 B1 B2 B3 adversarial backup harness
-        if: matrix.lane == 'backup-harness'
-        shell: pwsh
-        working-directory: ./_pathfinder_s2d_b3_source
-        run: dotnet run -c Release --project tests/NotesBackupVNextHarness/NotesBackupVNextHarness.csproj
-      - name: Run B6 native writer ACK restore epoch adversarial tests
-        if: matrix.lane == 'backup-harness'
-        shell: pwsh
-        working-directory: ./_pathfinder_s2d_b3_source
-        run: dotnet run -c Release --project tests/NotesVNextCoordinatorHarness/NotesVNextCoordinatorHarness.csproj
-      - name: Compile and run B8 fake-journal native commit boundary harness
-        if: matrix.lane == 'backup-harness'
-        shell: pwsh
-        working-directory: ./_pathfinder_s2d_b3_source
-        run: dotnet run -c Release --project tests/NotesVNextCommitHarness/NotesVNextCommitHarness.csproj
-      - name: Run B9 native closed-set writer admission adversarial tests
-        if: matrix.lane == 'backup-harness'
-        shell: pwsh
-        working-directory: ./_pathfinder_s2d_b3_source
-        run: dotnet run -c Release --project tests/NotesVNextAdmissionHarness/NotesVNextAdmissionHarness.csproj
-      - name: Compile and run B10 real synchronous writer and stale queued epoch tests
-        if: matrix.lane == 'backup-harness'
-        shell: pwsh
-        working-directory: ./_pathfinder_s2d_b3_source
-        run: dotnet run -c Release --project tests/NotesVNextRealSaveHooksHarness/NotesVNextRealSaveHooksHarness.csproj
       - name: Compile and run B11 SQLite attachment and stale page-session native adversarial tests
         if: matrix.lane == 'backup-harness'
         shell: pwsh
