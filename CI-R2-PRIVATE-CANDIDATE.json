@@ -21,6 +21,6 @@
     "src/QuranReconciliation/Resources/Guides/THTRP-User-Guide.html": "dfe022acb531238365019984a5bee51883df08aa"
   },
   "scope": "v2.0.0 final release-cut UI owner changes; identical release-candidate executable aside from MainWindow.xaml",
-  "ci_attempt": 5,
-  "ci_only_correction": "Enforce runtime-state cleanup after GUI smoke and before artifact upload; no application source change"
+  "ci_attempt": 6,
+  "ci_only_correction": "Repair YAML: use functional string replacement to prevent JavaScript $' expansion of source suffix; enforce clean Data removal before upload"
 }

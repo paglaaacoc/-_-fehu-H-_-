@@ -167,13 +167,7 @@ jobs:
             }
             if(Test-Path $target) { throw "Release package contains forbidden runtime state: $target" }
           }
-          $sidecars=Get-ChildItem $root -Recurse -File | Where-Object { $_.Name -match '(?i)\\.sqlite-(?:wal|shm)
-        with:
-          name: The-Holy-Quran-TRP-v2.0.0-Personal-Stable-Final-UI-win-x64
-          path: artifacts/THTRP-v2.0.0-Personal-Stable-Final-UI-win-x64/
-          retention-days: 7
-          if-no-files-found: error
- -or $_.Name -eq 'owner-state-operation.json' }
+          $sidecars=Get-ChildItem $root -Recurse -File | Where-Object { $_.Name -match '[.]sqlite-(wal|shm)$' -or $_.Name -eq 'owner-state-operation.json' }
           if($sidecars) { throw "Release package contains runtime SQLite sidecar or recovery journal: $($sidecars.FullName -join ', ')" }
           Write-Host 'Clean release package PASS: no Data/Backups/Diagnostics or SQLite runtime sidecars'
       - uses: actions/upload-artifact@v4
