@@ -1,0 +1,91 @@
+# Unactivated S2-B R8 lifecycle: no release build, no startup hook and no backup pointer.
+name: Pathfinder S2B R8 isolated WebView wire CI
+
+on:
+  push:
+    branches:
+      - dev/pathfinder-scratchpad-s2-r1-20261009
+    paths:
+      - ci/s2b-r8/**
+      - .github/workflows/pathfinder-s2b-r8-wire-ci.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  staging-wire:
+    if: github.ref == 'refs/heads/dev/pathfinder-scratchpad-s2-r1-20261009'
+    runs-on: windows-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate immutable source ZIP and isolated wire overlay
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = $env:GITHUB_WORKSPACE
+          $archive = Join-Path $root 'NivareQ-Pathfinder-S2B-R5-INTERNAL-Full-Source-2026-10-10.zip'
+          $actual = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne '04a6b743016f561bb3dfd31f0f7bcbadfa1c4b5e0debe57ac13047257c64420d') { throw "R5 immutable archive changed: $actual" }
+          $source = Join-Path $root '_pathfinder_s2b_r7_source'
+          New-Item -ItemType Directory -Force -Path $source | Out-Null
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [IO.Compression.ZipFile]::ExtractToDirectory($archive,$source)
+          $manifest = Get-Content (Join-Path $source 'INTEGRITY-S2B-R5-MANIFEST.json') -Raw | ConvertFrom-Json
+          $entries = @($manifest.sha256_all_payload_files_excluding_this_manifest.PSObject.Properties)
+          if ($entries.Count -ne 560) { throw 'R5 source manifest entry count mismatch.' }
+          foreach ($e in $entries) {
+            $rel = [string]$e.Name
+            if ($rel.Contains('..') -or [IO.Path]::IsPathRooted($rel)) { throw "Unsafe source path: $rel" }
+            $file = Join-Path $source $rel
+            if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "Missing R5 source file: $rel" }
+            if ((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant() -ne [string]$e.Value) { throw "R5 source hash mismatch: $rel" }
+          }
+          & (Join-Path $source 'tools/verify-medical-payload.ps1')
+          $overlays = @(
+            @('NotesWebMessageBridgeV1.cs', '2a9d2a05eab117474aef926660f6c47a13fc57b7d80799fe0d42abe8838c8ab7', 'src/NivareQ.Step2Pathfinder/Services/NotesWebMessageBridgeV1.cs'),
+            @('NotesWebDocumentLifecycleV1.cs', '4d6ae31da2841eba3c1fd89d98ad14237229d77ebf87f0f974bd3768bd0b5060', 'src/NivareQ.Step2Pathfinder/Services/NotesWebDocumentLifecycleV1.cs'),
+            @('NotesWebView2LifecycleAdapterV1.cs', 'eac842e754c439e0b81ad29acd497a543b4d6d2e415072dc71bd60bde43adf82', 'src/NivareQ.Step2Pathfinder/Services/NotesWebView2LifecycleAdapterV1.cs'),
+            @('NotesLifecycleHarness.csproj', '', 'tests/NotesWireHarness/NotesWireHarness.csproj'),
+            @('Program.cs', '', 'tests/NotesWireHarness/Program.cs')
+          )
+          foreach ($entry in $overlays) {
+            $overlay = Join-Path $root ('ci/s2b-r8/' + $entry[0])
+            # Windows checkout can convert LF to CRLF. Verify canonical LF
+            # source bytes and explicitly write them without BOM for native CI.
+            $text = [Text.UTF8Encoding]::new($false,$true).GetString([IO.File]::ReadAllBytes($overlay))
+            $text = $text.Replace(([string][char]13 + [string][char]10),[string][char]10)
+            $bytes = [Text.UTF8Encoding]::new($false).GetBytes($text)
+            $actual = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
+            if ($entry[1] -ne "" -and $actual -ne $entry[1]) { throw "R8 canonical LF SHA-256 mismatch: $($entry[0]) $actual" }
+            $destination = Join-Path $source $entry[2]
+            New-Item -ItemType Directory -Force -Path (Split-Path $destination) | Out-Null
+            [IO.File]::WriteAllBytes($destination,$bytes)
+          }
+          Write-Host 'Unchanged R5 source and three R8 native overlay files verified.'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Run native R7+R8 lifecycle and wire contract harness
+        shell: pwsh
+        working-directory: ./_pathfinder_s2b_r7_source
+        run: dotnet run -c Release --project tests/NotesWireHarness/NotesWireHarness.csproj
+      - name: Compile isolated native WinUI x64
+        shell: pwsh
+        working-directory: ./_pathfinder_s2b_r7_source
+        run: |
+          dotnet restore src/NivareQ.Step2Pathfinder/NivareQ.Step2Pathfinder.csproj -r win-x64 -p:Platform=x64
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build src/NivareQ.Step2Pathfinder/NivareQ.Step2Pathfinder.csproj -c Release -r win-x64 --no-restore -p:Platform=x64
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Compile isolated native WinUI ARM64
+        shell: pwsh
+        working-directory: ./_pathfinder_s2b_r7_source
+        run: |
+          dotnet restore src/NivareQ.Step2Pathfinder/NivareQ.Step2Pathfinder.csproj -r win-arm64 -p:Platform=ARM64
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build src/NivareQ.Step2Pathfinder/NivareQ.Step2Pathfinder.csproj -c Release -r win-arm64 --no-restore -p:Platform=ARM64
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
