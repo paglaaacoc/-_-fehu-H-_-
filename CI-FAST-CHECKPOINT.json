@@ -15,5 +15,8 @@
   "source_artifact_run": 37973098209,
   "expected_corpus_sha256": "188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862",
   "research_data": "NO OWNER DATA; PINNED ACCEPTED CORPUS ONLY",
-  "purpose": "Native C0 compile and C1 read-only search-index build with golden probe"
+  "purpose": "Native C0 compile and C1 read-only search-index build with golden probe",
+  "attempt": 2,
+  "previous_run": "38024942072 CI-only PowerShell PSCustomObject count assertion failed before compilation",
+  "validation_scope": "Same exact private C0/C1 source; corrected CI manifest property count only"
 }
