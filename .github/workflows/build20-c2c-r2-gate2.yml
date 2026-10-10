@@ -1,0 +1,67 @@
+name: THTRP C2c R2 Gate 2 - Pinned Lemma Position Index
+on:
+  push:
+    branches: [ci/build-2.0-search]
+    paths: [CI-R2-GATE2.json]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  derived-index-windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact private builder and probe Git blobs
+        shell: pwsh
+        run: |
+          $manifest=Get-Content -Raw ./CI-R2-GATE2.json | ConvertFrom-Json
+          if ($manifest.private_source -ne '19a3968ce4626d79957e44b59ec33c9a33c574cb') { throw 'Unpinned private source' }
+          if ($manifest.rollback -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'Accepted rollback identity changed' }
+          foreach ($property in $manifest.source_blobs.PSObject.Properties) {
+            $hash=(git rev-parse "HEAD:$($property.Name)").Trim()
+            if ($LASTEXITCODE -ne 0 -or $hash -ne $property.Value) { throw "Private source blob mismatch: $($property.Name)" }
+          }
+          Write-Host 'C2c R2 Gate2 source provenance PASS'
+      - name: Retrieve exact R5 canonical databases
+        uses: actions/download-artifact@v4
+        with:
+          name: The-Holy-Quran-TRP-Build-1.9-R5-win-x64
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 37973098209
+          github-token: ${{ github.token }}
+          path: ./frozen-r5
+      - name: Retrieve annotation as exact pinned QAC Git blob
+        shell: pwsh
+        run: |
+          git clone --no-checkout --filter=blob:none --quiet https://github.com/taziksh/quran-frequencies.git ./qac-upstream
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot load pinned QAC upstream' }
+          git -C ./qac-upstream cat-file -t b91cec6e95d5e0306550b4aedacc7380dc71152a
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned QAC blob inaccessible' }
+          python -c "import subprocess,pathlib; data=subprocess.run(['git','-C','qac-upstream','cat-file','blob','b91cec6e95d5e0306550b4aedacc7380dc71152a'],stdout=subprocess.PIPE,check=True).stdout;pathlib.Path('qac-v0.4.txt').write_bytes(data)"
+          if ($LASTEXITCODE -ne 0) { throw 'Git object materialization failure' }
+          if ((git hash-object --no-filters ./qac-v0.4.txt).Trim() -ne 'b91cec6e95d5e0306550b4aedacc7380dc71152a') { throw 'Exact annotation identity failure' }
+      - name: Independently validate full QAC-to-R5 word alignment
+        shell: pwsh
+        run: |
+          python ./tools/CorpusLemmaAlignmentProbe/validate_lemma_alignment.py --annotation ./qac-v0.4.txt --corpus ./frozen-r5/Corpus/corpus.sqlite --word-by-word ./frozen-r5/Corpus/word-by-word.sqlite
+          if ($LASTEXITCODE -ne 0) { throw 'Inherited Gate1 alignment test regressed' }
+      - name: Build pinned derived positional lemma index
+        shell: pwsh
+        run: |
+          python ./tools/CorpusLemmaIndexBuilder/build_lemma_positions.py --annotation ./qac-v0.4.txt --corpus ./frozen-r5/Corpus/corpus.sqlite --word-by-word ./frozen-r5/Corpus/word-by-word.sqlite --output ./scratch/derived-lemma-positions.sqlite
+          if ($LASTEXITCODE -ne 0) { throw 'Gate2 builder failed, do not ship index' }
+      - name: Independently verify occurrence and exact phrase counting
+        shell: pwsh
+        run: |
+          python ./tools/CorpusLemmaIndexBuilder/probe_count_queries.py --index ./scratch/derived-lemma-positions.sqlite --corpus ./frozen-r5/Corpus/corpus.sqlite
+          if ($LASTEXITCODE -ne 0) { throw 'Gate2 research count probe failed' }
+      - name: Verify derived database integrity and frozen inputs unchanged
+        shell: pwsh
+        run: |
+          if ((Get-FileHash ./frozen-r5/Corpus/corpus.sqlite -Algorithm SHA256).Hash.ToLowerInvariant() -ne '188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862') { throw 'Canonical corpus changed' }
+          if ((Get-FileHash ./frozen-r5/Corpus/word-by-word.sqlite -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'd119f2f113e916a9968f7275f87d31f1f8027ddcf2a5b1ff80e60b7c1b122a31') { throw 'Word by word corpus changed' }
+          $size=(Get-Item ./scratch/derived-lemma-positions.sqlite).Length
+          if ($size -le 100000) { throw 'Implausibly small index' }
+          Write-Host "R2 Gate2 derived indexed evidence bytes: $size"
+          Write-Host 'No bundled app, source corpus mutation, or GPL data publication attempted'
