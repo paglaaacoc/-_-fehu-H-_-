@@ -1,7 +1,7 @@
-name: THTRP Build 2.0 v2.0.0 RC1 - Private Owner Candidate
+name: THTRP Build 2.0 v2.0.0 Final UI - Private Release Candidate
 on:
   push:
-    branches: [ci/v2.0.0-rc1]
+    branches: [ci/v2.0.0-final-ui-r1]
     paths: [CI-R2-PRIVATE-CANDIDATE.json]
 permissions:
   contents: read
@@ -19,7 +19,7 @@ jobs:
         shell: pwsh
         run: |
           $m=Get-Content -Raw ./CI-R2-PRIVATE-CANDIDATE.json | ConvertFrom-Json
-          if ($m.source_sha -ne '09f1b6847c0c00d6d0040f0414720dc7e6aae74c') { throw 'Private source ref mismatch' }
+          if ($m.source_sha -ne '278aba43728393ed2ae3a925c8ce4e30e9f623bb') { throw 'Private source ref mismatch' }
           if ($m.r5_sha -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'R5 rollback ref mismatch' }
           foreach($item in $m.blobs.PSObject.Properties) {
             $actual=(git rev-parse "HEAD:$($item.Name)").Trim()
@@ -81,12 +81,12 @@ jobs:
       - name: Publish self-contained private x64 owner-test workstation
         shell: pwsh
         run: |
-          dotnet publish ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true -p:WindowsPackageType=None -p:SourceRevisionId=09f1b6847c0c00d6d0040f0414720dc7e6aae74c -o ./artifacts/THTRP-Build-2.0-v2.0.0-RC1-win-x64
+          dotnet publish ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true -p:WindowsPackageType=None -p:SourceRevisionId=278aba43728393ed2ae3a925c8ce4e30e9f623bb -o ./artifacts/THTRP-v2.0.0-Personal-Stable-Final-UI-win-x64
           if($LASTEXITCODE -ne 0) { throw 'WinUI private owner candidate publish failed' }
       - name: Merge immutable R5 portable assets and include QAC source attribution
         shell: pwsh
         run: |
-          $root='./artifacts/THTRP-Build-2.0-v2.0.0-RC1-win-x64'
+          $root='./artifacts/THTRP-v2.0.0-Personal-Stable-Final-UI-win-x64'
           New-Item -ItemType Directory -Force (Join-Path $root 'Corpus') | Out-Null
           New-Item -ItemType Directory -Force (Join-Path $root 'Fonts') | Out-Null
           Copy-Item ./r5/Corpus/* (Join-Path $root 'Corpus') -Recurse -Force
@@ -112,7 +112,7 @@ jobs:
       - name: Verify release identity and bundled guide
         shell: pwsh
         run: |
-          $root='./artifacts/THTRP-Build-2.0-v2.0.0-RC1-win-x64'
+          $root='./artifacts/THTRP-v2.0.0-Personal-Stable-Final-UI-win-x64'
           $guide=Join-Path $root 'Guides/THTRP-User-Guide.html'
           if(!(Test-Path $guide)) { throw 'Bundled release user guide missing' }
           $html=Get-Content -Raw $guide
@@ -120,12 +120,20 @@ jobs:
           $version=(Get-Item (Join-Path $root 'The Holy Quran TRP.exe')).VersionInfo.FileVersion
           if($version -ne '2.0.0.0') { throw "Expected native FileVersion 2.0.0.0 but found '$version'" }
           $layout=Get-Content -Raw ./src/QuranReconciliation/MainWindow.xaml
-          if(!$layout.Contains('Text="v2.0.0 · The Holy Translation Reconciliation Project"')) { throw 'Stale native owner-test subtitle remains' }
-          Write-Host 'v2.0.0 identity, native XAML subtitle, compiled binary metadata, guide PASS'
+          if(!$layout.Contains('Text="v2.0.0"')) { throw 'Stale native owner-test subtitle remains' }
+          $headerIndex=$layout.IndexOf('x:Name="TopBarSubtitleText"')
+          $nav1=$layout.IndexOf('x:Name="ResearchNavButton"')
+          $nav2=$layout.IndexOf('x:Name="WorkingSlicesNavButton"')
+          $nav3=$layout.IndexOf('x:Name="ContextAtlasNavButton"')
+          $nav4=$layout.IndexOf('x:Name="CorpusSearchNavButton"')
+          $nav5=$layout.IndexOf('x:Name="HistoryNavButton"')
+          if($headerIndex -lt 0 -or $nav1 -lt 0 -or $nav2 -le $nav1 -or $nav3 -le $nav2 -or $nav4 -le $nav3 -or $nav5 -le $nav4) { throw 'Release main footer navigation order incorrect' }
+          if($layout.Contains('Text="v2.0.0 · The Holy Translation Reconciliation Project"')) { throw 'Research subtitle still exposes full project tagline' }
+          Write-Host 'v2.0.0 compact native title, owner-order navigation, compiled binary metadata, guide PASS'
       - name: Start native WinUI GUI from original and relocated portable folders
         shell: pwsh
         run: |
-          $root=(Resolve-Path ./artifacts/THTRP-Build-2.0-v2.0.0-RC1-win-x64).Path
+          $root=(Resolve-Path ./artifacts/THTRP-v2.0.0-Personal-Stable-Final-UI-win-x64).Path
           $copy=Join-Path $env:RUNNER_TEMP 'THTRP-R2-relocated'
           Copy-Item $root $copy -Recurse -Force
           foreach($dir in @($root,$copy)) {
@@ -149,7 +157,7 @@ jobs:
           Write-Host 'R2 private owner build native WinUI launch / folder relocation PASS'
       - uses: actions/upload-artifact@v4
         with:
-          name: The-Holy-Quran-TRP-Build-2.0-v2.0.0-RC1-win-x64
-          path: artifacts/THTRP-Build-2.0-v2.0.0-RC1-win-x64/
+          name: The-Holy-Quran-TRP-v2.0.0-Personal-Stable-Final-UI-win-x64
+          path: artifacts/THTRP-v2.0.0-Personal-Stable-Final-UI-win-x64/
           retention-days: 7
           if-no-files-found: error

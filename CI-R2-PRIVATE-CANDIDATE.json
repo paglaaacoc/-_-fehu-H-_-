@@ -1,8 +1,8 @@
 {
-  "source_sha": "09f1b6847c0c00d6d0040f0414720dc7e6aae74c",
+  "source_sha": "278aba43728393ed2ae3a925c8ce4e30e9f623bb",
   "r5_sha": "6b54c3987934caa860094adcbc92ccf504b9342b",
   "blobs": {
-    "src/QuranReconciliation/MainWindow.xaml": "a0e28c002eb9037d4f03a4cfa1fca07e2c8ccc60",
+    "src/QuranReconciliation/MainWindow.xaml": "7a138d3b0b4db3fe025f6b570367ed4dfaa6d121",
     "src/QuranReconciliation/MainWindow.CorpusSearch.cs": "030dee5e2b877321f23d3669418d3c81c19e2762",
     "src/QuranReconciliation/MainWindow.CorpusSearchPreview.cs": "1552f534b7b347c3bf37fb1a63613271611fdc01",
     "src/QuranReconciliation/MainWindow.CorpusOccurrences.cs": "906bfb00a2b3e17bc2dd8f0bcf8b6bb0a880237d",
@@ -20,7 +20,7 @@
     "src/QuranReconciliation/MainWindow.Notes.cs": "8125b374445404d4c3aa732a9d56d5d002b75644",
     "src/QuranReconciliation/Resources/Guides/THTRP-User-Guide.html": "dfe022acb531238365019984a5bee51883df08aa"
   },
-  "scope": "v2.0.0 Personal Stable candidate (owner acceptance pending): audited identity+offline guide, restore original N01 handler; private portable x64",
-  "ci_attempt": 3,
+  "scope": "v2.0.0 final release-cut UI owner changes; identical release-candidate executable aside from MainWindow.xaml",
+  "ci_attempt": 4,
   "ci_only_correction": "Supersede earlier CI-only root fix; pin updated release source XAML subtitle and verify no R2 R1 status appears in native UI."
 }

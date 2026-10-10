@@ -44,7 +44,7 @@
                                FontSize="29"
                                FontWeight="SemiBold"/>
                     <TextBlock x:Name="TopBarSubtitleText"
-                               Text="v2.0.0 · The Holy Translation Reconciliation Project"
+                               Text="v2.0.0"
                                Foreground="{StaticResource MutedTextBrush}"
                                FontSize="15"
                                Margin="0,3,0,0"/>
@@ -1694,24 +1694,24 @@
                         Margin="6,0,0,0"
                         Click="OpenWorkingSlices_Click"/>
 
-                <Button x:Name="HistoryNavButton"
+<Button x:Name="ContextAtlasNavButton"
                         Grid.Column="3"
-                        Content="History"
+                        Content="Context Atlas"
                         Padding="12,4"
                         Margin="6,0,0,0"
-                        Click="OpenHistory_Click"/>
+                        Click="OpenContextAtlas_Click"/>
 
                 <Button x:Name="CorpusSearchNavButton"
                         Grid.Column="4" Content="Corpus Search"
                         Padding="12,4" Margin="6,0,0,0"
                         Click="OpenCorpusSearch_Click"/>
 
-                <Button x:Name="ContextAtlasNavButton"
+                                <Button x:Name="HistoryNavButton"
                         Grid.Column="5"
-                        Content="Context Atlas"
+                        Content="History"
                         Padding="12,4"
                         Margin="6,0,0,0"
-                        Click="OpenContextAtlas_Click"/>
+                        Click="OpenHistory_Click"/>
 
                 <Button Grid.Column="6"
                         Content="Data safety"
