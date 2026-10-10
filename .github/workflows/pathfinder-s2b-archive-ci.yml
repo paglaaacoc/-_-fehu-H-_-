@@ -1,0 +1,113 @@
+# Internal development CI only. R5 archive is immutable input; no release, installer, or live activation.
+# Never run on main. The archive SHA-256 is verified before any code is evaluated.
+name: Pathfinder S2B R5 archive-native validation
+
+on:
+  push:
+    branches:
+      - dev/pathfinder-scratchpad-s2-r1-20261009
+    paths:
+      - NivareQ-Pathfinder-S2B-R5-INTERNAL-Full-Source-2026-10-10.zip
+      - .github/workflows/pathfinder-s2b-archive-ci.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pathfinder-s2b-r5-archive-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  native-gates:
+    if: github.ref == 'refs/heads/dev/pathfinder-scratchpad-s2-r1-20261009'
+    runs-on: windows-latest
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lane: notes-harness
+            rid: win-x64
+            platform: x64
+          - lane: winui-x64
+            rid: win-x64
+            platform: x64
+          - lane: winui-arm64
+            rid: win-arm64
+            platform: ARM64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Verify exact R5 archive, extract, and verify all 560 source hashes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zipName = 'NivareQ-Pathfinder-S2B-R5-INTERNAL-Full-Source-2026-10-10.zip'
+          $expected = '04a6b743016f561bb3dfd31f0f7bcbadfa1c4b5e0debe57ac13047257c64420d'
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE $zipName
+          if (-not (Test-Path -LiteralPath $zipPath -PathType Leaf)) { throw 'R5 archive missing from isolated development branch.' }
+          $actual = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $expected) { throw "R5 archive SHA-256 mismatch: $actual" }
+          $dst = Join-Path $env:GITHUB_WORKSPACE '_pathfinder_s2b_source'
+          New-Item -ItemType Directory -Path $dst -Force | Out-Null
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $dst)
+          $manifestPath = Join-Path $dst 'INTEGRITY-S2B-R5-MANIFEST.json'
+          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+          if ($manifest.checkpoint -ne 'S2-B R5 internal native-release race safety') { throw 'Wrong or modified R5 source manifest.' }
+          $entries = @($manifest.sha256_all_payload_files_excluding_this_manifest.PSObject.Properties)
+          if ($entries.Count -ne 560) { throw "Unexpected source manifest entry count $($entries.Count)." }
+          foreach ($entry in $entries) {
+            $rel = [string]$entry.Name
+            if ($rel.Contains('..') -or [IO.Path]::IsPathRooted($rel) -or $rel.StartsWith('/')) { throw "Unsafe manifest path: $rel" }
+            $file = Join-Path $dst $rel
+            if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "Source file missing: $rel" }
+            $hash = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($hash -ne [string]$entry.Value) { throw "Source file hash mismatch: $rel" }
+          }
+          & (Join-Path $dst 'tools/verify-medical-payload.ps1')
+          Write-Host "Exact R5 archive verified; 560 manifest files and medical payload verified."
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Run Notes protocol and portable contract checks
+        if: matrix.lane == 'notes-harness'
+        working-directory: ./_pathfinder_s2b_source
+        shell: pwsh
+        run: |
+          node tests/NotesProtocolHarness/run.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/s2b_contract_smoke.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/s2b_r2_contract_validation.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/s2b_r3_protocol_contract.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/s2b_r4_wire_contract.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/s2b_r5_release_fence.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Compile and run native .NET 10 NotesStore staging harness
+        if: matrix.lane == 'notes-harness'
+        working-directory: ./_pathfinder_s2b_source
+        shell: pwsh
+        run: dotnet run -c Release --project tests/NotesStoreHarness/NotesStoreHarness.csproj
+
+      - name: Restore WinUI native project (no package)
+        if: matrix.lane != 'notes-harness'
+        working-directory: ./_pathfinder_s2b_source
+        shell: pwsh
+        run: dotnet restore src/NivareQ.Step2Pathfinder/NivareQ.Step2Pathfinder.csproj -r ${{ matrix.rid }} -p:Platform=${{ matrix.platform }}
+
+      - name: Compile WinUI native project (no installer or release)
+        if: matrix.lane != 'notes-harness'
+        working-directory: ./_pathfinder_s2b_source
+        shell: pwsh
+        run: dotnet build src/NivareQ.Step2Pathfinder/NivareQ.Step2Pathfinder.csproj -c Release -r ${{ matrix.rid }} --no-restore -p:Platform=${{ matrix.platform }}
