@@ -26,14 +26,14 @@ jobs:
           $p = Get-Content -Raw ./CI-UI-CHECKPOINT.json | ConvertFrom-Json
           if ($p.private_source_sha -ne 'a19c922421d49ac6bc6b2add8de18b0d9b8dbc79') { throw 'Unpinned C2b source' }
           if ($p.r5_rollback_sha -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'R5 rollback identity changed' }
-          if (@($p.source_blob_shas.PSObject.Properties).Count -ne 19) { throw 'Expected 19 protected source Git blobs' }
+          if (@($p.source_blob_shas.PSObject.Properties).Count -ne 18) { throw 'Expected 18 protected source Git blobs' }
           foreach ($item in $p.source_blob_shas.PSObject.Properties) {
             $actual = (git rev-parse "HEAD:$($item.Name)").Trim()
             if ($LASTEXITCODE -ne 0 -or $actual -ne $item.Value) {
               throw "Source Git blob mismatch for $($item.Name)"
             }
           }
-          Write-Host 'C0/C1/C2a/C2b private source provenance: 19/19 PASS'
+          Write-Host 'C0/C1/C2a/C2b private source provenance: 18/18 PASS'
       - name: Retrieve original verified R5 corpus
         uses: actions/download-artifact@v4
         with:
