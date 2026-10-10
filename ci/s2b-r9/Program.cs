@@ -82,7 +82,7 @@ internal sealed class SmokeHost : Form
             _core.Settings.IsWebMessageEnabled = true;
             _core.NavigationStarting += OnStarting;
             _core.NavigationCompleted += OnCompleted;
-            _core.SourceChanged += (sender,_) => _policy!.SourceChanged(sender.Source);
+            _core.SourceChanged += (_,_) => _policy!.SourceChanged(_core!.Source);
             _core.ProcessFailed += (_,e) => _policy!.ProcessFailed(e.ProcessFailedKind.ToString());
             _core.WebMessageReceived += OnMessage;
             _core.NewWindowRequested += (_, e) => e.Handled = true;
@@ -162,19 +162,19 @@ internal sealed class SmokeHost : Form
         ResultCode=1;
         try { Close(); } catch { }
     }
-    private void OnStarting(CoreWebView2 sender,CoreWebView2NavigationStartingEventArgs e)
+    private void OnStarting(object? sender,CoreWebView2NavigationStartingEventArgs e)
     {
         _startEvents++;
         if(_policy!.NavigationStarting(e.Uri,e.NavigationId))return;
         e.Cancel=true; _denied++; _cancelSignal?.TrySetResult(true);
     }
-    private void OnCompleted(CoreWebView2 sender,CoreWebView2NavigationCompletedEventArgs e)
+    private void OnCompleted(object? sender,CoreWebView2NavigationCompletedEventArgs e)
     {
         _completed++;
-        var bootstrap=_policy!.NavigationCompleted(sender.Source,e.NavigationId,e.IsSuccess);
-        if(bootstrap!=null)sender.PostWebMessageAsJson(bootstrap);
+        var bootstrap=_policy!.NavigationCompleted(_core!.Source,e.NavigationId,e.IsSuccess);
+        if(bootstrap!=null)_core!.PostWebMessageAsJson(bootstrap);
     }
-    private void OnMessage(CoreWebView2 sender,CoreWebView2WebMessageReceivedEventArgs e)
+    private void OnMessage(object? sender,CoreWebView2WebMessageReceivedEventArgs e)
     {
         _messages++;
         using var msg=JsonDocument.Parse(e.WebMessageAsJson);
@@ -194,8 +194,8 @@ internal sealed class SmokeHost : Form
                 return;
             }
         }
-        var reply=_policy!.WebMessageReceived(e.Source,sender.Source,e.WebMessageAsJson);
-        if(reply!=null)sender.PostWebMessageAsJson(reply);
+        var reply=_policy!.WebMessageReceived(e.Source,_core!.Source,e.WebMessageAsJson);
+        if(reply!=null)_core!.PostWebMessageAsJson(reply);
     }
     private async Task<JsonElement> SendAsync(string action,object payload,string id)
     {
