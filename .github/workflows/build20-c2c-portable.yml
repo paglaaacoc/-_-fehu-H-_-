@@ -1,0 +1,125 @@
+name: THTRP Build 2.0 C2c R1 Portable Owner Candidate
+on:
+  push:
+    branches: [ci/build-2.0-search]
+    paths: [CI-PACKAGE-CHECKPOINT.json]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  portable-candidate:
+    runs-on: windows-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify private C2c Git source blobs
+        shell: pwsh
+        run: |
+          $p=Get-Content -Raw ./CI-PACKAGE-CHECKPOINT.json | ConvertFrom-Json
+          if ($p.source_sha -ne 'b2dcbea25d53c62be6bf9c3f9305272d6ee4aa07') { throw 'Unpinned private C2c source' }
+          if ($p.r5_rollback -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'R5 rollback mismatch' }
+          foreach ($entry in $p.blobs.PSObject.Properties) {
+            $actual=(git rev-parse "HEAD:$($entry.Name)").Trim()
+            if ($LASTEXITCODE -ne 0 -or $actual -ne $entry.Value) { throw "Private source mismatch: $($entry.Name)" }
+          }
+          Write-Host 'Exact private C2c source provenance PASS'
+      - name: Download existing complete R5 portable artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: The-Holy-Quran-TRP-Build-1.9-R5-win-x64
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 37973098209
+          github-token: ${{ github.token }}
+          path: ./r5-baseline
+      - name: Download separately verified C1 search index
+        uses: actions/download-artifact@v4
+        with:
+          name: THTRP-B20-C1-search-index-validation
+          repository: paglaaacoc/-_-fehu-H-_-
+          run-id: 38025181456
+          github-token: ${{ github.token }}
+          path: ./verified-index
+      - name: Verify inputs and stage verified index into WinUI project
+        shell: pwsh
+        run: |
+          $corpus='./r5-baseline/Corpus/corpus.sqlite'
+          $index='./verified-index/corpus-search.sqlite'
+          if ((Get-FileHash $corpus -Algorithm SHA256).Hash.ToLowerInvariant() -ne '188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862') { throw 'R5 corpus digest mismatch' }
+          if ((Get-FileHash $index -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'ab2be67067172e17592a4bc981b5930ee5e45e3c7c313f332f78d151f198d830') { throw 'Search index digest mismatch' }
+          if ((Get-FileHash ./r5-baseline/Corpus/word-by-word.sqlite -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'd119f2f113e916a9968f7275f87d31f1f8027ddcf2a5b1ff80e60b7c1b122a31') { throw 'R5 word-by-word digest mismatch' }
+          New-Item -ItemType Directory -Force ./src/QuranReconciliation/Resources/SearchIndex | Out-Null
+          Copy-Item $index ./src/QuranReconciliation/Resources/SearchIndex/corpus-search.sqlite -Force
+      - name: Publish a self-contained portable Windows x64 application
+        shell: pwsh
+        run: |
+          dotnet publish ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true -p:WindowsPackageType=None -p:SourceRevisionId=b2dcbea25d53c62be6bf9c3f9305272d6ee4aa07 -o ./artifacts/THTRP-Build-2.0-C2c-R1-win-x64
+          if ($LASTEXITCODE -ne 0) { throw 'Self-contained WinUI publish failed' }
+      - name: Bundle unchanged R5 assets and validate exact portable output
+        shell: pwsh
+        run: |
+          $root='./artifacts/THTRP-Build-2.0-C2c-R1-win-x64'
+          Copy-Item ./r5-baseline/Corpus $root/Corpus -Recurse -Force
+          Copy-Item ./r5-baseline/Fonts $root/Fonts -Recurse -Force
+          foreach ($p in @('The Holy Quran TRP.exe','Corpus/corpus.sqlite','Corpus/corpus-search.sqlite','Corpus/word-by-word.sqlite','Corpus/juz-map.json','Guides/THTRP-User-Guide.html','Assets/QuranReconciliation.ico','Fonts/UthmanicHafs1Ver18.ttf','Fonts/indopak-nastaleeq-waqf-lazim-v4.2.1.ttf')) {
+            if (!(Test-Path (Join-Path $root $p))) { throw "Portable asset missing $p" }
+          }
+          $checks=@{
+            'Corpus/corpus.sqlite'='188e29730b62efaff748e160f73bb2e6665769df4fa779ee1436af939c6e7862'
+            'Corpus/word-by-word.sqlite'='d119f2f113e916a9968f7275f87d31f1f8027ddcf2a5b1ff80e60b7c1b122a31'
+            'Corpus/corpus-search.sqlite'='ab2be67067172e17592a4bc981b5930ee5e45e3c7c313f332f78d151f198d830'
+            'Corpus/juz-map.json'='3016bb4f94af9a42c8c1c24728bf6044e5b4ac13130e47d451c0c10ba35dd434'
+            'Fonts/UthmanicHafs1Ver18.ttf'='a0636e68e375af9552470d67773936f54d536e6586ce2608311b2fe7f9cbec3a'
+            'Fonts/indopak-nastaleeq-waqf-lazim-v4.2.1.ttf'='4c8f002e7538ef6351ac676eb0f2c1708ecd17f6f8a5fc4a19dbc8eaf4dddff5'
+          }
+          foreach($entry in $checks.GetEnumerator()) {
+            $actual=(Get-FileHash (Join-Path $root $entry.Key) -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($actual -ne $entry.Value) { throw "Pinned portable asset digest changed: $($entry.Key)" }
+          }
+          if (Test-Path $root/Data) { throw 'Candidate accidentally includes owner Data' }
+          if (Test-Path $root/Backups) { throw 'Candidate accidentally includes owner Backups' }
+          if (Test-Path $root/ContextAtlas/Imported) { throw 'Candidate contains imported personal Atlas data' }
+          Write-Host 'Self-contained portable inputs + search-index + no owner data PASS'
+      - name: Inherited multilingual query probe against packaged files
+        shell: pwsh
+        run: |
+          $root='./artifacts/THTRP-Build-2.0-C2c-R1-win-x64'
+          dotnet run --project ./tools/CorpusSearchQueryProbe/CorpusSearchQueryProbe.csproj -c Release -- "$root/Corpus/corpus.sqlite" "$root/Corpus/corpus-search.sqlite"
+          if ($LASTEXITCODE -ne 0) { throw 'Packaged multilingual search verification failed' }
+      - name: Launch packaged native GUI and verify portable relocation
+        shell: pwsh
+        run: |
+          $root=(Resolve-Path ./artifacts/THTRP-Build-2.0-C2c-R1-win-x64).Path
+          $copy=Join-Path $env:RUNNER_TEMP 'THTRP-portable-relocated'
+          Copy-Item $root $copy -Recurse -Force
+          foreach ($folder in @($root,$copy)) {
+            $p=Start-Process -FilePath (Join-Path $folder 'The Holy Quran TRP.exe') -WorkingDirectory $folder -PassThru
+            $deadline=(Get-Date).AddSeconds(45)
+            do {
+              Start-Sleep -Milliseconds 500
+              $p.Refresh()
+              if ($p.HasExited) { throw "Candidate exited before showing GUI in $folder" }
+            } while ($p.MainWindowHandle -eq [IntPtr]::Zero -and (Get-Date) -lt $deadline)
+            if ($p.MainWindowHandle -eq [IntPtr]::Zero) {
+              Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+              throw "No WinUI main window in $folder"
+            }
+            Stop-Process -Id $p.Id -Force
+            Write-Host "Portable WinUI startup PASS in $folder"
+          }
+          foreach ($folder in @($root,$copy)) {
+            Remove-Item (Join-Path $folder 'Data') -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item (Join-Path $folder 'Backups') -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item (Join-Path $folder 'Diagnostics') -Recurse -Force -ErrorAction SilentlyContinue
+          }
+          Remove-Item $copy -Recurse -Force
+          Write-Host 'Portable relocation + cleanup PASS'
+      - name: Upload disposable Build 2.0 C2c R1 owner-test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: The-Holy-Quran-TRP-Build-2.0-C2c-R1-win-x64
+          path: artifacts/THTRP-Build-2.0-C2c-R1-win-x64/
+          retention-days: 7
+          if-no-files-found: error
