@@ -1,0 +1,39 @@
+// S2-D B4: real schema/pointer gate is separate from the old permissive B3 fixture.
+var sourceGeneration = Guid.NewGuid().ToString("N");
+var secondGeneration = Guid.NewGuid().ToString("N");
+string CanonicalWithPointer(string id) => """
+    {"BackupSchemaVersion":7,"FormatId":"nivareq.step2pathfinder.backup",
+    "ContractAuthority":"windows-canonical","PreservedExtensions":{
+    "nivareq.notes.activeGeneration.v1":"REPLACE_POINTER"}}
+    """.Replace("REPLACE_POINTER",id);
+using(var doc=JsonDocument.Parse(CanonicalWithPointer(sourceGeneration)))
+    Check(NotesVNextProviderAuthorityV1.ValidateArchiveProvider(doc.RootElement,sourceGeneration)==sourceGeneration,
+        "B4 accepts matching frozen Notes pointer and canonical identity");
+using(var doc=JsonDocument.Parse(CanonicalWithPointer(sourceGeneration)))
+    Refuse(()=>NotesVNextProviderAuthorityV1.ValidateArchiveProvider(doc.RootElement,secondGeneration),
+        "B4 rejects provider/snapshot generation mismatch");
+using(var doc=JsonDocument.Parse(CanonicalWithPointer("../../outside")))
+    Refuse(()=>NotesVNextProviderAuthorityV1.ValidateArchiveProvider(doc.RootElement),
+        "B4 rejects traversal generation pointer");
+using(var doc=JsonDocument.Parse(CanonicalWithPointer(sourceGeneration).Replace("7,", "6,")))
+    Refuse(()=>NotesVNextProviderAuthorityV1.ValidateArchiveProvider(doc.RootElement),
+        "B4 requires current schema 7, not imported legacy providers");
+using(var doc=JsonDocument.Parse(CanonicalWithPointer(sourceGeneration).Replace(
+    "\"ContractAuthority\":\"windows-canonical\",",
+    "\"ContractAuthority\":\"windows-canonical\",\"ContractAuthority\":\"windows-canonical\",")))
+    Refuse(()=>NotesVNextProviderAuthorityV1.ValidateArchiveProvider(doc.RootElement),
+        "B4 rejects duplicate canonical JSON keys, even same-value duplicates");
+using(var doc=JsonDocument.Parse(CanonicalWithPointer(sourceGeneration).Replace(
+    "\"nivareq.notes.activeGeneration.v1\":",
+    "\"legacy.different-key\":")))
+    Refuse(()=>NotesVNextProviderAuthorityV1.ValidateArchiveProvider(doc.RootElement),
+        "B4 requires Notes source pointer, not opaque fallback");
+NotesVNextProviderAuthorityV1.ValidatePointerRebase(sourceGeneration,secondGeneration,null);
+Check(true,"B5 accepts a distinct new staging generation identifier");
+Refuse(()=>NotesVNextProviderAuthorityV1.ValidatePointerRebase(sourceGeneration,sourceGeneration,null),
+    "B5 refuses to reuse the archive's source generation");
+Refuse(()=>NotesVNextProviderAuthorityV1.ValidatePointerRebase(sourceGeneration,secondGeneration,secondGeneration),
+    "B5 refuses to select currently active generation as a restore destination");
+Refuse(()=>NotesVNextProviderAuthorityV1.ValidatePointerRebase(sourceGeneration,secondGeneration,"../../malformed"),
+    "B5 refuses an untrusted currently-active generation pointer");
+
