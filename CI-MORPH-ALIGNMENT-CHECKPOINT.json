@@ -4,5 +4,8 @@
   "morphology_source": "taziksh/quran-frequencies 079cdc74cd494ec1b35011363288d80cae047c51",
   "morphology_blob": "b91cec6e95d5e0306550b4aedacc7380dc71152a",
   "validation_only": true,
-  "packaging_disabled": true
+  "packaging_disabled": true,
+  "attempt": 2,
+  "retry_reason": "CI-only: pinned raw HTTP bytes rejected, use exact Git object with immutable SHA",
+  "previous_run": 38046038818
 }
