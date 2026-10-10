@@ -87,7 +87,7 @@ internal static class Program
         using (var commit = admission.BeginRestore())
         {
             Reject<InvalidOperationException>(() => NotesVNextWriteInstrumentationV1.RunSynchronous(
-                NotesVNextMutationSurface.BackupExtensions, PersistenceWriteResult.Ok),
+                NotesVNextMutationSurface.PreservedExtensions, PersistenceWriteResult.Ok),
                 "restore freeze blocks new save");
             commit.MarkCommitAttempted();
         }
