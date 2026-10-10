@@ -283,6 +283,15 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'B10 source patch does not apply' }
           & git -C $root apply $patchPath
           if ($LASTEXITCODE -ne 0) { throw 'B10 source patch failed' }
+          # Windows git apply may rewrite touched files as CRLF according to
+          # checkout autocrlf. Restore authored LF ONLY for the eight exact
+          # patched files, then enforce their immutable Full Source hashes.
+          foreach($entry in $paths.GetEnumerator()){
+            $target=Join-Path $root $entry.Key
+            $data=[IO.File]::ReadAllText($target)
+            $lf=$data.Replace("`r`n","`n")
+            if ($data -cne $lf){ [IO.File]::WriteAllText($target,$lf,[Text.UTF8Encoding]::new($false)) }
+          }
           foreach($entry in $paths.GetEnumerator()){
             $target=Join-Path $root $entry.Key
             if ((Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant() -ne $entry.Value[1]) { throw "B10 resulting source differs from Full Source: $($entry.Key)" }
