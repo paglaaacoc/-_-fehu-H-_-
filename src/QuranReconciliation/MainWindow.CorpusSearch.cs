@@ -76,6 +76,9 @@ public sealed partial class MainWindow
         }
 
         EnsureCorpusSearchSourceChoices();
+        // Also synchronize after cold startup if XAML fired its initial
+        // SelectionChanged before all named controls were constructed.
+        SetCorpusSearchScriptChoices(SelectedCorpusSearchMode());
         WorkspaceGrid.Visibility = Visibility.Collapsed;
         WorkingSliceWorkspaceGrid.Visibility = Visibility.Collapsed;
         HistoryWorkspaceGrid.Visibility = Visibility.Collapsed;

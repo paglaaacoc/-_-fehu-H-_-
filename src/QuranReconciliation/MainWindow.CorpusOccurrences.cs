@@ -45,13 +45,11 @@ public sealed partial class MainWindow
         CorpusSearchTranslationSelector.Header =
             text ? "Translation source" : "Translation source (Text mode only)";
         CorpusSearchNormalizedToggle.IsEnabled = text;
-        // In full-Ayah comparison the old "All scripts" choice has always
-        // compared Uthmani alone; make that existing truth visible.
-        if (CorpusSearchScriptSelector.Items[0] is ComboBoxItem defaultScript)
-        {
-            defaultScript.Content = mode == "ayah" ? "Uthmani (default)" : "All Arabic scripts";
-            defaultScript.Tag = mode == "ayah" ? "uthmani" : "all";
-        }
+        // Avoid mutating the selected ComboBoxItem's Content: WinUI can
+        // retain the previous closed-selection label until the popup opens.
+        // Use the existing explicit Uthmani choice and hide "All" only in
+        // exact whole-Ayah mode; no matching or script SQL is changed.
+        SetCorpusSearchScriptChoices(mode);
         CorpusSearchScriptSelector.IsEnabled =
             mode == "ayah" ||
             (text && SelectedCorpusSearchLanguage() == CorpusSearchLanguage.Arabic);
@@ -88,6 +86,26 @@ public sealed partial class MainWindow
         // filter if Language is not Arabic) through its single authority.
         if (_ready)
             CorpusSearchFilter_Changed(sender, e);
+    }
+
+    private void SetCorpusSearchScriptChoices(string mode)
+    {
+        if (CorpusSearchScriptSelector.Items.Count < 2 ||
+            CorpusSearchScriptSelector.Items[0] is not ComboBoxItem allScripts)
+            return;
+
+        if (mode == "ayah")
+        {
+            // Make a real selection instead of repainting the selected item.
+            // 'All scripts' never meant a multi-script comparison in this mode.
+            if (CorpusSearchScriptSelector.SelectedIndex <= 0)
+                CorpusSearchScriptSelector.SelectedIndex = 1;
+            allScripts.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            allScripts.Visibility = Visibility.Visible;
+        }
     }
 
     private void CorpusSearchLemmaCandidate_Changed(

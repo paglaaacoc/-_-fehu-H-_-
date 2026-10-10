@@ -1,4 +1,4 @@
-name: THTRP Build 2.0 C2c R2 R2 - Private Owner Candidate
+name: THTRP Build 2.0 C2c R2 R3 - Private Owner Candidate
 on:
   push:
     branches: [ci/build-2.0-search]
@@ -15,11 +15,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Verify all exact private C2c R2 R2 source blobs
+      - name: Verify all exact private C2c R2 R3 source blobs
         shell: pwsh
         run: |
           $m=Get-Content -Raw ./CI-R2-PRIVATE-CANDIDATE.json | ConvertFrom-Json
-          if ($m.source_sha -ne '05f52d1b2a90dcaa8ea4b81e7769ce2302edce4a') { throw 'Private source ref mismatch' }
+          if ($m.source_sha -ne '733352de244f3070033b32bc9ad47356828d8cd8') { throw 'Private source ref mismatch' }
           if ($m.r5_sha -ne '6b54c3987934caa860094adcbc92ccf504b9342b') { throw 'R5 rollback ref mismatch' }
           foreach($item in $m.blobs.PSObject.Properties) {
             $actual=(git rev-parse "HEAD:$($item.Name)").Trim()
@@ -70,12 +70,12 @@ jobs:
       - name: Publish self-contained private x64 owner-test workstation
         shell: pwsh
         run: |
-          dotnet publish ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true -p:WindowsPackageType=None -p:SourceRevisionId=05f52d1b2a90dcaa8ea4b81e7769ce2302edce4a -o ./artifacts/THTRP-Build-2.0-C2c-R2-R2-win-x64
+          dotnet publish ./src/QuranReconciliation/QuranReconciliation.csproj -c Release -r win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true -p:WindowsPackageType=None -p:SourceRevisionId=733352de244f3070033b32bc9ad47356828d8cd8 -o ./artifacts/THTRP-Build-2.0-C2c-R2-R3-win-x64
           if($LASTEXITCODE -ne 0) { throw 'WinUI private owner candidate publish failed' }
       - name: Merge immutable R5 portable assets and include QAC source attribution
         shell: pwsh
         run: |
-          $root='./artifacts/THTRP-Build-2.0-C2c-R2-R2-win-x64'
+          $root='./artifacts/THTRP-Build-2.0-C2c-R2-R3-win-x64'
           New-Item -ItemType Directory -Force (Join-Path $root 'Corpus') | Out-Null
           New-Item -ItemType Directory -Force (Join-Path $root 'Fonts') | Out-Null
           Copy-Item ./r5/Corpus/* (Join-Path $root 'Corpus') -Recurse -Force
@@ -101,7 +101,7 @@ jobs:
       - name: Start native WinUI GUI from original and relocated portable folders
         shell: pwsh
         run: |
-          $root=(Resolve-Path ./artifacts/THTRP-Build-2.0-C2c-R2-R2-win-x64).Path
+          $root=(Resolve-Path ./artifacts/THTRP-Build-2.0-C2c-R2-R3-win-x64).Path
           $copy=Join-Path $env:RUNNER_TEMP 'THTRP-R2-relocated'
           Copy-Item $root $copy -Recurse -Force
           foreach($dir in @($root,$copy)) {
@@ -125,7 +125,7 @@ jobs:
           Write-Host 'R2 private owner build native WinUI launch / folder relocation PASS'
       - uses: actions/upload-artifact@v4
         with:
-          name: The-Holy-Quran-TRP-Build-2.0-C2c-R2-R2-win-x64
-          path: artifacts/THTRP-Build-2.0-C2c-R2-R2-win-x64/
+          name: The-Holy-Quran-TRP-Build-2.0-C2c-R2-R3-win-x64
+          path: artifacts/THTRP-Build-2.0-C2c-R2-R3-win-x64/
           retention-days: 7
           if-no-files-found: error
